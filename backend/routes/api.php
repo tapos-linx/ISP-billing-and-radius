@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\IpdrController;
 use App\Http\Controllers\Api\V1\IpPoolController;
 use App\Http\Controllers\Api\V1\MetricsController;
 use App\Http\Controllers\Api\V1\MfsWebhookController;
+use App\Http\Controllers\Api\V1\MobileSelfCareController;
 use App\Http\Controllers\Api\V1\NetworkAndFieldIntelligenceController;
 use App\Http\Controllers\Api\V1\NetworkOperationsController;
 use App\Http\Controllers\Api\V1\SipSignalingController;
@@ -312,5 +313,16 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/tenants', [TenantController::class, 'index']);
             Route::get('/tenants/{id}', [TenantController::class, 'show']);
         });
+    });
+
+    // Release 2.2: Mobile Self-Care & Push Notification Gateway Endpoints
+    Route::prefix('mobile')->group(function (): void {
+        Route::get('/profile', [MobileSelfCareController::class, 'profile']);
+        Route::get('/usage', [MobileSelfCareController::class, 'usage']);
+        Route::get('/invoices', [MobileSelfCareController::class, 'invoices']);
+        Route::post('/diagnose', [MobileSelfCareController::class, 'diagnose']);
+        Route::post('/boost', [MobileSelfCareController::class, 'boost']);
+        Route::post('/devices/register', [MobileSelfCareController::class, 'registerDevice']);
+        Route::get('/notifications', [MobileSelfCareController::class, 'notifications']);
     });
 });
