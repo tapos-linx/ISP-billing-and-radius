@@ -1,12 +1,17 @@
 #!/bin/sh
 set -e
 
+if [ -z "$REPLICATION_PASSWORD" ]; then
+    echo "FATAL: REPLICATION_PASSWORD environment variable is missing. Failing closed." >&2
+    exit 1
+fi
+
 # Create replication user for streaming replication
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     DO \$\$
     BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'repl_user') THEN
-            CREATE ROLE repl_user WITH REPLICATION LOGIN PASSWORD '${REPLICATION_PASSWORD:-ReplSecret2026!}';
+            CREATE ROLE repl_user WITH REPLICATION LOGIN PASSWORD '${REPLICATION_PASSWORD}';
         END IF;
     END
     \$\$;
