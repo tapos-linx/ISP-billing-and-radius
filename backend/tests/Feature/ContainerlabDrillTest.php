@@ -4,24 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\Tariff;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class ContainerlabDrillTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function test_containerlab_drill_command_runs_successfully(): void
     {
-        Tariff::create([
-            'name' => 'CHR 100M Dedicated',
-            'download_speed' => 100,
-            'upload_speed' => 100,
-            'price_bdt' => 3500.00,
-        ]);
-
         $exitCode = Artisan::call('carrier:clab-drill', ['--tenant-id' => 1]);
         $output = Artisan::output();
 

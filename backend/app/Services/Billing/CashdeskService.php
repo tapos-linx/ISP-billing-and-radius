@@ -71,7 +71,11 @@ class CashdeskService
             }
 
             /** @var Invoice $invoice */
-            $invoice = Invoice::withoutGlobalScopes()->lockForUpdate()->findOrFail($invoiceId);
+            $invoice = Invoice::withoutGlobalScopes()
+                ->where('subscriber_id', $subscriberId)
+                ->where('invoice_id', $invoiceId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
             $receiptNumber = 'RCP-'.Carbon::now()->format('ymd').'-'.strtoupper(Str::random(6));
 

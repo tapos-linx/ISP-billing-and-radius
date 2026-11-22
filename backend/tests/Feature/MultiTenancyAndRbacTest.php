@@ -190,51 +190,53 @@ class MultiTenancyAndRbacTest extends TestCase
     private function seedMultiTenantFixtures(): void
     {
         // Seed subscriber in Tenant 2 (Uttara)
-        Subscriber::withoutGlobalScopes()->updateOrInsert(
-            ['username' => 'uttara_pilot_sub'],
-            [
+        if (! Subscriber::withoutGlobalScopes()->where('subscriber_id', '22222222-2222-2222-2222-222222222222')->exists()) {
+            Subscriber::withoutGlobalScopes()->create([
                 'subscriber_id' => '22222222-2222-2222-2222-222222222222',
                 'tenant_id' => 2,
+                'tariff_id' => 1,
+                'username' => 'uttara_pilot_sub',
                 'bandwidth_profile' => '15M/15M',
                 'status' => 'active',
                 'expires_at' => now()->addDays(30),
-            ]
-        );
+            ]);
+        }
 
         // Seed invoice in Tenant 2
-        Invoice::withoutGlobalScopes()->updateOrInsert(
-            ['invoice_id' => '22222222-fa00-2222-2222-222222222222'],
-            [
+        if (! Invoice::withoutGlobalScopes()->where('invoice_id', '22222222-fa00-2222-2222-222222222222')->where('subscriber_id', '22222222-2222-2222-2222-222222222222')->exists()) {
+            Invoice::withoutGlobalScopes()->create([
+                'invoice_id' => '22222222-fa00-2222-2222-222222222222',
                 'subscriber_id' => '22222222-2222-2222-2222-222222222222',
                 'tenant_id' => 2,
                 'amount_bdt' => 800.00,
                 'status' => 'paid',
                 'due_date' => now()->addDays(5),
-            ]
-        );
+            ]);
+        }
 
         // Seed subscriber in Tenant 3 (Dhanmondi)
-        Subscriber::withoutGlobalScopes()->updateOrInsert(
-            ['username' => 'dhanmondi_pilot_sub'],
-            [
+        if (! Subscriber::withoutGlobalScopes()->where('subscriber_id', '33333333-3333-3333-3333-333333333333')->exists()) {
+            Subscriber::withoutGlobalScopes()->create([
                 'subscriber_id' => '33333333-3333-3333-3333-333333333333',
                 'tenant_id' => 3,
+                'tariff_id' => 1,
+                'username' => 'dhanmondi_pilot_sub',
                 'bandwidth_profile' => '25M/25M',
                 'status' => 'active',
                 'expires_at' => now()->addDays(30),
-            ]
-        );
+            ]);
+        }
 
         // Seed invoice in Tenant 3
-        Invoice::withoutGlobalScopes()->updateOrInsert(
-            ['invoice_id' => '33333333-fa00-3333-3333-333333333333'],
-            [
+        if (! Invoice::withoutGlobalScopes()->where('invoice_id', '33333333-fa00-3333-3333-333333333333')->where('subscriber_id', '33333333-3333-3333-3333-333333333333')->exists()) {
+            Invoice::withoutGlobalScopes()->create([
+                'invoice_id' => '33333333-fa00-3333-3333-333333333333',
                 'subscriber_id' => '33333333-3333-3333-3333-333333333333',
                 'tenant_id' => 3,
                 'amount_bdt' => 1200.00,
                 'status' => 'unpaid',
                 'due_date' => now()->addDays(7),
-            ]
-        );
+            ]);
+        }
     }
 }
