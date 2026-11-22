@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 /**
@@ -345,13 +344,13 @@ class AuditTrackerController extends Controller
                 <span class="text-2xl">✨</span>
                 <div>
                     <h1 class="text-lg font-bold text-slate-100 tracking-tight">Gemini Audit & Progress Intelligence Hub</h1>
-                    <p class="text-xs text-slate-400">ISP Billing & FreeRADIUS Carrier Platform (Release ' . htmlspecialchars($platform['version']) . ')</p>
+                    <p class="text-xs text-slate-400">ISP Billing & FreeRADIUS Carrier Platform (Release '.htmlspecialchars($platform['version']).')</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    ' . htmlspecialchars($platform['certification_status']) . '
+                    '.htmlspecialchars($platform['certification_status']).'
                 </span>
                 <a href="/api/v1/gemini/audit-tracker" target="_blank" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition">
                     View Raw JSON API
@@ -366,10 +365,10 @@ class AuditTrackerController extends Controller
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
                 <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Automated Tests</span>
                 <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-2xl font-bold text-emerald-400">' . $gates['tests_passed'] . ' / ' . $gates['tests_passed'] . '</span>
+                    <span class="text-2xl font-bold text-emerald-400">'.$gates['tests_passed'].' / '.$gates['tests_passed'].'</span>
                     <span class="text-xs text-slate-500">100% PASS</span>
                 </div>
-                <p class="text-xs text-slate-400 mt-1">' . $gates['assertions'] . ' assertions verified</p>
+                <p class="text-xs text-slate-400 mt-1">'.$gates['assertions'].' assertions verified</p>
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
                 <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Static Analysis</span>
@@ -411,7 +410,7 @@ class AuditTrackerController extends Controller
                     <h2 class="text-base font-bold text-slate-100">Authoritative Engineering Runbooks (docs/)</h2>
                     <p class="text-xs text-slate-400">17 formal specification and disaster recovery documents</p>
                 </div>
-                <span class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-800 text-slate-300">' . count($runbooks) . ' Runbooks</span>
+                <span class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-800 text-slate-300">'.count($runbooks).' Runbooks</span>
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                 <div class="overflow-x-auto">
@@ -429,14 +428,14 @@ class AuditTrackerController extends Controller
 
         foreach ($runbooks as $doc) {
             $html .= '<tr class="hover:bg-slate-800/30 transition">
-                <td class="py-3 px-4 font-mono font-semibold text-slate-400">' . htmlspecialchars($doc['id']) . '</td>
-                <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">' . htmlspecialchars($doc['category']) . '</span></td>
-                <td class="py-3 px-4 font-medium text-slate-200">' . htmlspecialchars($doc['title']) . '</td>
-                <td class="py-3 px-4 font-mono text-slate-400">' . htmlspecialchars($doc['file']) . '</td>
+                <td class="py-3 px-4 font-mono font-semibold text-slate-400">'.htmlspecialchars($doc['id']).'</td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">'.htmlspecialchars($doc['category']).'</span></td>
+                <td class="py-3 px-4 font-medium text-slate-200">'.htmlspecialchars($doc['title']).'</td>
+                <td class="py-3 px-4 font-mono text-slate-400">'.htmlspecialchars($doc['file']).'</td>
                 <td class="py-3 px-4 text-right">
                     <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        ' . htmlspecialchars($doc['status']) . '
+                        '.htmlspecialchars($doc['status']).'
                     </span>
                 </td>
             </tr>';
@@ -455,7 +454,7 @@ class AuditTrackerController extends Controller
                     <h2 class="text-base font-bold text-slate-100">Stage Progress & Engineering Reports</h2>
                     <p class="text-xs text-slate-400">Chronological execution and compliance audits from Stage 0 to Release 2.3</p>
                 </div>
-                <span class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-800 text-slate-300">' . count($stages) . ' Reports</span>
+                <span class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-800 text-slate-300">'.count($stages).' Reports</span>
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                 <div class="overflow-x-auto">
@@ -472,13 +471,13 @@ class AuditTrackerController extends Controller
 
         foreach ($stages as $stage) {
             $html .= '<tr class="hover:bg-slate-800/30 transition">
-                <td class="py-3 px-4 font-semibold text-sky-400">' . htmlspecialchars($stage['stage']) . '</td>
-                <td class="py-3 px-4 font-medium text-slate-200">' . htmlspecialchars($stage['title']) . '</td>
-                <td class="py-3 px-4 font-mono text-slate-400">' . htmlspecialchars($stage['artifact']) . '</td>
+                <td class="py-3 px-4 font-semibold text-sky-400">'.htmlspecialchars($stage['stage']).'</td>
+                <td class="py-3 px-4 font-medium text-slate-200">'.htmlspecialchars($stage['title']).'</td>
+                <td class="py-3 px-4 font-mono text-slate-400">'.htmlspecialchars($stage['artifact']).'</td>
                 <td class="py-3 px-4 text-right">
                     <span class="inline-flex items-center gap-1 text-emerald-400 font-semibold">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        ' . htmlspecialchars($stage['status']) . '
+                        '.htmlspecialchars($stage['status']).'
                     </span>
                 </td>
             </tr>';

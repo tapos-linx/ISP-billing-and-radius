@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AiCopilotController;
-use App\Http\Controllers\AuditTrackerController;
 use App\Http\Controllers\Api\V1\BillingLifecycleController;
 use App\Http\Controllers\Api\V1\CardPaymentController;
 use App\Http\Controllers\Api\V1\CommercialAndResellerController;
@@ -26,6 +25,7 @@ use App\Http\Controllers\Api\V1\SubscriberController;
 use App\Http\Controllers\Api\V1\SupportBotController;
 use App\Http\Controllers\Api\V1\TenantController;
 use App\Http\Controllers\Api\V1\TrafficAndAaaController;
+use App\Http\Controllers\AuditTrackerController;
 use App\Http\Middleware\VerifyMfsReplayProtection;
 use App\Jobs\ExpireOverdueSubscribersJob;
 use Illuminate\Support\Facades\DB;
