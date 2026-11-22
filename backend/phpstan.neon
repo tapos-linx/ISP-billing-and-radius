@@ -2,14 +2,18 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
-    level: 5
+    level: 6
     paths:
         - app
+        - database/migrations
     excludePaths:
         - ./*/*/FileToBeExcluded.php
+    checkOctaneCompatibility: true
+    noEnvCallsOutsideOfConfig: true
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:
+        - identifier: missingType.iterableValue
+        - identifier: missingType.generics
         - '#Unsafe usage of new static#'
-        - '#Called .env. outside of the config directory#'
         - '#Access to an undefined property App\\Models\\#'

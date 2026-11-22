@@ -163,6 +163,6 @@ class ProbeAaaLatencyCommand extends Command
             }
         }
 
-        return env('RADIUS_SECRET', 'secure_radius_secret_key_2026');
+        return (string) config('services.radius.secret', 'secure_radius_secret_key_2026');
     }
 }

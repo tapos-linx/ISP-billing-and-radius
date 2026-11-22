@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\MobileSelfCareController;
 use App\Http\Controllers\Api\V1\NetworkAndFieldIntelligenceController;
 use App\Http\Controllers\Api\V1\NetworkOperationsController;
 use App\Http\Controllers\Api\V1\SipSignalingController;
+use App\Http\Controllers\Api\V1\SslCommerzWebhookController;
 use App\Http\Controllers\Api\V1\SubscriberController;
 use App\Http\Controllers\Api\V1\SupportBotController;
 use App\Http\Controllers\Api\V1\TenantController;
@@ -106,9 +107,10 @@ Route::prefix('v1')->group(function (): void {
     // P0-7: Universal Card Payment Gateway Endpoints
     Route::prefix('payments/card')->group(function (): void {
         Route::post('/initiate', [CardPaymentController::class, 'initiate']);
-        Route::post('/sslcommerz/ipn', [CardPaymentController::class, 'handleSslCommerzIpn']);
+        Route::post('/sslcommerz/ipn', [SslCommerzWebhookController::class, 'ipn']);
         Route::post('/stripe/webhook', [CardPaymentController::class, 'handleStripeWebhook']);
     });
+    Route::post('/webhooks/sslcommerz/ipn', [SslCommerzWebhookController::class, 'ipn']);
 
     // P0-9 to P0-12: Network Operations, MikroTik, OLT, Polling & IPAM
     Route::prefix('network')->group(function (): void {

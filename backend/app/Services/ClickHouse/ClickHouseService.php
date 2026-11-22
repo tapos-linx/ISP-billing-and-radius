@@ -24,11 +24,11 @@ class ClickHouseService
 
     public function __construct()
     {
-        $this->host = env('CLICKHOUSE_HOST', 'clickhouse');
-        $this->port = (int) env('CLICKHOUSE_PORT', 8123);
-        $this->database = env('CLICKHOUSE_DB', 'isp_telemetry');
-        $this->user = env('CLICKHOUSE_USER', 'default');
-        $this->password = env('CLICKHOUSE_PASSWORD', '');
+        $this->host = (string) config('services.clickhouse.host', 'clickhouse');
+        $this->port = (int) config('services.clickhouse.port', 8123);
+        $this->database = (string) config('services.clickhouse.database', 'isp_telemetry');
+        $this->user = (string) config('services.clickhouse.user', 'default');
+        $this->password = (string) config('services.clickhouse.password', '');
     }
 
     public function getBaseUrl(): string

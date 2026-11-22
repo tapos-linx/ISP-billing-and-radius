@@ -47,4 +47,21 @@ return [
         'merchant_key' => $resolveSecret('nagad_secret', env('NAGAD_MERCHANT_KEY')),
     ],
 
+    'radius' => [
+        'secret' => $resolveSecret('radius_secret', env('RADIUS_SECRET', 'secure_radius_secret_key_2026')),
+    ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY', ''),
+        'model' => env('GEMINI_MODEL', env('GEMINI_FLASH_MODEL', 'gemini-1.5-flash')),
+    ],
+
+    'clickhouse' => [
+        'host' => env('CLICKHOUSE_HOST', 'clickhouse'),
+        'port' => (int) env('CLICKHOUSE_PORT', 8123),
+        'database' => env('CLICKHOUSE_DB', 'isp_telemetry'),
+        'user' => env('CLICKHOUSE_USER', 'default'),
+        'password' => env('CLICKHOUSE_PASSWORD', ''),
+    ],
+
 ];

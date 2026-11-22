@@ -79,8 +79,8 @@ final class AiCopilotController extends Controller
         ];
 
         // 6. Gemini API Diagnostic Prompt Construction
-        $apiKey = (string) env('GEMINI_API_KEY', '');
-        $model = (string) env('GEMINI_MODEL', env('GEMINI_FLASH_MODEL', 'gemini-1.5-flash'));
+        $apiKey = (string) config('services.gemini.api_key', '');
+        $model = (string) config('services.gemini.model', 'gemini-1.5-flash');
 
         if ($apiKey !== '' && ! str_starts_with($apiKey, 'REPLACE_WITH_') && ! config('app.testing')) {
             $prompt = sprintf(

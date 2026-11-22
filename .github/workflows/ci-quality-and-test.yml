@@ -1,0 +1,124 @@
+name: CI Quality and Test
+
+on:
+  push:
+    branches: [main, master, 'release/**']
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ====================================================================
+  # 1. Code Quality & Static Analysis Job
+  # ====================================================================
+  code-quality-and-static-analysis:
+    name: Code Quality & Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, pgsql, redis, bcmath, sockets, gd
+          tools: composer:v2
+
+      - name: Install Composer Dependencies
+        working-directory: backend
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Laravel Pint Code Style Inspection
+        working-directory: backend
+        run: ./vendor/bin/pint --test
+
+      - name: Larastan / PHPStan Level 6 Static Analysis
+        working-directory: backend
+        run: ./vendor/bin/phpstan analyse --memory-limit=1G
+
+  # ====================================================================
+  # 2. Lint and Test Job (PostgreSQL 16 + Redis 7 noeviction)
+  # ====================================================================
+  lint-and-test:
+    name: lint-and-test
+    runs-on: ubuntu-latest
+    needs: [code-quality-and-static-analysis]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: isp_bss_oss
+          POSTGRES_USER: isp_admin
+          POSTGRES_PASSWORD: secure_isp_password_2026
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+          --maxmemory-policy noeviction
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, pgsql, redis, bcmath, sockets, gd
+          tools: composer:v2
+
+      - name: Install Composer Dependencies
+        working-directory: backend
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Apply Base Carrier Schema
+        env:
+          PGPASSWORD: secure_isp_password_2026
+        run: |
+          for f in $(ls stage1/sql/*.sql | sort); do
+            echo "Applying schema file: $f"
+            psql -h 127.0.0.1 -U isp_admin -d isp_bss_oss -f "$f"
+          done
+
+      - name: Run Database Migrations
+        working-directory: backend
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: isp_bss_oss
+          DB_USERNAME: isp_admin
+          DB_PASSWORD: secure_isp_password_2026
+        run: php artisan migrate --force
+
+      - name: Execute PHPUnit Test Suite
+        working-directory: backend
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: isp_bss_oss
+          DB_USERNAME: isp_admin
+          DB_PASSWORD: secure_isp_password_2026
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: ""
+        run: ./vendor/bin/phpunit --testdox

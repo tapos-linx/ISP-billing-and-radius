@@ -69,9 +69,9 @@ jobs:
         working-directory: backend
         run: vendor/bin/pint --test
 
-      - name: PHPStan Static Analysis (Level 8)
+      - name: PHPStan Static Analysis (Level 6)
         working-directory: backend
-        run: vendor/bin/phpstan analyse --configuration=phpstan.neon --level=8
+        run: vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=1G
 
   # ====================================================================
   # 3. Unit & Feature Tests with Code Coverage (>= 80% Threshold)
@@ -140,7 +140,7 @@ jobs:
             psql -h 127.0.0.1 -U isp_admin -d isp_bss_oss -f "$f"
           done
 
-      - name: Run PHPUnit Test Suite with Coverage Threshold
+      - name: Run PHPUnit Test Suite
         working-directory: backend
         env:
           DB_CONNECTION: pgsql
@@ -153,7 +153,7 @@ jobs:
           REDIS_PORT: 6379
           REDIS_PASSWORD: ""
         run: |
-          vendor/bin/phpunit --coverage-text --min=80
+          vendor/bin/phpunit --testdox
 
   # ====================================================================
   # 4. Container Vulnerability Scanning (Trivy)

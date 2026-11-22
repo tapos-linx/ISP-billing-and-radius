@@ -69,11 +69,9 @@ final class MfsWebhookController extends Controller
 
         $val = match ($gateway) {
             'bkash' => config('services.bkash.webhook_secret')
-                ?: config('services.bkash.app_secret')
-                ?: env('BKASH_WEBHOOK_SECRET', env('BKASH_APP_SECRET')),
+                ?: config('services.bkash.app_secret'),
             'nagad' => config('services.nagad.webhook_secret')
-                ?: config('services.nagad.merchant_key')
-                ?: env('NAGAD_WEBHOOK_SECRET', env('NAGAD_MERCHANT_KEY')),
+                ?: config('services.nagad.merchant_key'),
             default => null,
         };
 
@@ -279,7 +277,7 @@ final class MfsWebhookController extends Controller
                 $radiusSecret = trim((string) file_get_contents('/run/secrets/radius_secret'));
             }
             if (empty($radiusSecret)) {
-                $radiusSecret = $nas ? $nas->secret : env('RADIUS_SECRET', 'secure_radius_secret_key_2026');
+                $radiusSecret = $nas ? $nas->secret : (string) config('services.radius.secret', 'secure_radius_secret_key_2026');
             }
 
             $coaPort = $nas ? (int) $nas->coa_port : 3799;
