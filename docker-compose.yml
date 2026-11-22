@@ -20,7 +20,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
       PGDATA: /var/lib/postgresql/data/pgdata
-      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-ReplSecret2026!}
+      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:?FATAL_REPLICATION_PASSWORD_REQUIRED}
     secrets:
       - db_password
     volumes:
@@ -61,7 +61,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-isp_billing}
       POSTGRES_USER: ${POSTGRES_USER:-radius_user}
       PGDATA: /var/lib/postgresql/data/pgdata
-      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-ReplSecret2026!}
+      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:?FATAL_REPLICATION_PASSWORD_REQUIRED}
     volumes:
       - postgres_replica_data:/var/lib/postgresql/data
       - ./stage1/scripts/replica-entrypoint.sh:/tmp/scripts/replica-entrypoint.sh:ro
@@ -95,7 +95,7 @@ services:
         if [ -f /run/secrets/redis_password ]; then
           AUTH_PASS=$$(cat /run/secrets/redis_password | tr -d '\r\n')
         else
-          AUTH_PASS=\"$${REDIS_PASSWORD:-SecretRedisToken2026!}\"
+          AUTH_PASS=\"$${REDIS_PASSWORD:?FATAL_REDIS_PASSWORD_REQUIRED}\"
         fi
         exec redis-server --requirepass \"$$AUTH_PASS\" --masterauth \"$$AUTH_PASS\" --appendonly yes --maxmemory 512mb --maxmemory-policy noeviction
       "
@@ -114,7 +114,7 @@ services:
           if [ -f /run/secrets/redis_password ]; then
             redis-cli -a \"$$(cat /run/secrets/redis_password | tr -d '\r\n')\" ping
           else
-            redis-cli -a \"$${REDIS_PASSWORD:-SecretRedisToken2026!}\" ping
+            redis-cli -a \"$${REDIS_PASSWORD:?FATAL_REDIS_PASSWORD_REQUIRED}\" ping
           fi
         "
       interval: 3s
@@ -138,7 +138,7 @@ services:
         if [ -f /run/secrets/redis_password ]; then
           AUTH_PASS=$$(cat /run/secrets/redis_password | tr -d '\r\n')
         else
-          AUTH_PASS=\"$${REDIS_PASSWORD:-SecretRedisToken2026!}\"
+          AUTH_PASS=\"$${REDIS_PASSWORD:?FATAL_REDIS_PASSWORD_REQUIRED}\"
         fi
         exec redis-server --replicaof redis_master 6379 --requirepass \"$$AUTH_PASS\" --masterauth \"$$AUTH_PASS\" --appendonly yes --maxmemory 512mb --maxmemory-policy noeviction
       "
@@ -156,7 +156,7 @@ services:
           if [ -f /run/secrets/redis_password ]; then
             redis-cli -a \"$$(cat /run/secrets/redis_password | tr -d '\r\n')\" ping
           else
-            redis-cli -a \"$${REDIS_PASSWORD:-SecretRedisToken2026!}\" ping
+            redis-cli -a \"$${REDIS_PASSWORD:?FATAL_REDIS_PASSWORD_REQUIRED}\" ping
           fi
         "
       interval: 3s
@@ -212,13 +212,25 @@ services:
       - |
         apk add --no-cache libpq >/dev/null 2>&1 || true
         export PATH=/opt/sbin:/opt/bin:$$PATH
-        RADIUS_SEC="$${RADIUS_SECRET:-testing123}"
-        [ -f /run/secrets/radius_secret ] && RADIUS_SEC=$$(cat /run/secrets/radius_secret | tr -d '\r\n')
-        DB_PASS="$${POSTGRES_PASSWORD:-SecretRadiusDbPassword2026!}"
-        [ -f /run/secrets/db_password ] && DB_PASS=$$(cat /run/secrets/db_password | tr -d '\r\n')
-        sed "s|\$${RADIUS_SECRET}|$$RADIUS_SEC|g; s/testing123/$$RADIUS_SEC/g; s/RadiusSecretKey2026/$$RADIUS_SEC/g" /tmp/custom_raddb/clients.conf > /opt/etc/raddb/clients.conf
+        if [ -f /run/secrets/radius_secret ]; then
+          RADIUS_SEC=$$(cat /run/secrets/radius_secret | tr -d '\r\n')
+        elif [ -n "$${RADIUS_SECRET}" ]; then
+          RADIUS_SEC="$${RADIUS_SECRET}"
+        else
+          echo 'FATAL: RADIUS secret missing. Failing closed.' >&2; exit 1
+        fi
+
+        if [ -f /run/secrets/db_password ]; then
+          DB_PASS=$$(cat /run/secrets/db_password | tr -d '\r\n')
+        elif [ -n "$${POSTGRES_PASSWORD}" ]; then
+          DB_PASS="$${POSTGRES_PASSWORD}"
+        else
+          echo 'FATAL: PostgreSQL password missing. Failing closed.' >&2; exit 1
+        fi
+
+        sed "s|\$${RADIUS_SECRET}|$$RADIUS_SEC|g" /tmp/custom_raddb/clients.conf > /opt/etc/raddb/clients.conf
         sed -i 's/\r$$//' /opt/etc/raddb/clients.conf
-        sed "s|\$${DB_PASSWORD}|$$DB_PASS|g; s/SecretRadiusDbPassword2026!/$$DB_PASS/g" /tmp/custom_raddb/sql > /opt/etc/raddb/mods-available/sql
+        sed "s|\$${DB_PASSWORD}|$$DB_PASS|g" /tmp/custom_raddb/sql > /opt/etc/raddb/mods-available/sql
         sed -i 's/\r$$//' /opt/etc/raddb/mods-available/sql
         ln -sf /opt/etc/raddb/mods-available/sql /opt/etc/raddb/mods-enabled/sql
         ln -sf /opt/etc/raddb/sites-available/coa /opt/etc/raddb/sites-enabled/coa
@@ -254,13 +266,25 @@ services:
       - |
         apk add --no-cache libpq >/dev/null 2>&1 || true
         export PATH=/opt/sbin:/opt/bin:$$PATH
-        RADIUS_SEC="$${RADIUS_SECRET:-testing123}"
-        [ -f /run/secrets/radius_secret ] && RADIUS_SEC=$$(cat /run/secrets/radius_secret | tr -d '\r\n')
-        DB_PASS="$${POSTGRES_PASSWORD:-SecretRadiusDbPassword2026!}"
-        [ -f /run/secrets/db_password ] && DB_PASS=$$(cat /run/secrets/db_password | tr -d '\r\n')
-        sed "s|\$${RADIUS_SECRET}|$$RADIUS_SEC|g; s/testing123/$$RADIUS_SEC/g; s/RadiusSecretKey2026/$$RADIUS_SEC/g" /tmp/custom_raddb/clients.conf > /opt/etc/raddb/clients.conf
+        if [ -f /run/secrets/radius_secret ]; then
+          RADIUS_SEC=$$(cat /run/secrets/radius_secret | tr -d '\r\n')
+        elif [ -n "$${RADIUS_SECRET}" ]; then
+          RADIUS_SEC="$${RADIUS_SECRET}"
+        else
+          echo 'FATAL: RADIUS secret missing. Failing closed.' >&2; exit 1
+        fi
+
+        if [ -f /run/secrets/db_password ]; then
+          DB_PASS=$$(cat /run/secrets/db_password | tr -d '\r\n')
+        elif [ -n "$${POSTGRES_PASSWORD}" ]; then
+          DB_PASS="$${POSTGRES_PASSWORD}"
+        else
+          echo 'FATAL: PostgreSQL password missing. Failing closed.' >&2; exit 1
+        fi
+
+        sed "s|\$${RADIUS_SECRET}|$$RADIUS_SEC|g" /tmp/custom_raddb/clients.conf > /opt/etc/raddb/clients.conf
         sed -i 's/\r$$//' /opt/etc/raddb/clients.conf
-        sed "s|\$${DB_PASSWORD}|$$DB_PASS|g; s/SecretRadiusDbPassword2026!/$$DB_PASS/g" /tmp/custom_raddb/sql > /opt/etc/raddb/mods-available/sql
+        sed "s|\$${DB_PASSWORD}|$$DB_PASS|g" /tmp/custom_raddb/sql > /opt/etc/raddb/mods-available/sql
         sed -i 's/\r$$//' /opt/etc/raddb/mods-available/sql
         ln -sf /opt/etc/raddb/mods-available/sql /opt/etc/raddb/mods-enabled/sql
         ln -sf /opt/etc/raddb/sites-available/coa /opt/etc/raddb/sites-enabled/coa
