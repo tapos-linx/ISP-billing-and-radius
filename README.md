@@ -9,6 +9,13 @@
 
 ---
 
+### 🔍 Gemini & Auditor Progress Tracking Hub
+- **Interactive Progress Dashboard:** [http://localhost:8000/gemini/audit](http://localhost:8000/gemini/audit)
+- **Machine-Readable Telemetry API:** [http://localhost:8000/api/v1/gemini/audit-tracker](http://localhost:8000/api/v1/gemini/audit-tracker)
+- **Master Documentation Index:** [`docs/audit/GEMINI_AUDIT_INDEX.md`](docs/audit/GEMINI_AUDIT_INDEX.md) (Cross-references all 29 progress artifacts and 17 production runbooks)
+
+---
+
 ## Table of Contents
 1. [Architecture Overview](#architecture-overview)
 2. [5-Stage (28-Day) Deployment Matrix](#5-stage-28-day-deployment-matrix)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditTrackerController;
 use App\Http\Controllers\HotspotWebController;
 use App\Http\Controllers\NocConsoleController;
 use App\Http\Controllers\SelfCareController;
@@ -10,6 +11,10 @@ Route::get('/self-care', [SelfCareController::class, 'index'])->name('self-care.
 Route::post('/self-care/pay/{gateway}', [SelfCareController::class, 'initiatePayment'])->name('self-care.pay');
 Route::post('/two-factor-challenge', [SelfCareController::class, 'twoFactorChallenge'])->name('two-factor.challenge');
 Route::post('/self-care/2fa/toggle', [SelfCareController::class, 'toggleTwoFactor'])->name('self-care.2fa.toggle');
+
+// Gemini Audit Tracker & Progress Intelligence Console
+Route::get('/gemini/audit', [AuditTrackerController::class, 'index'])->name('gemini.audit');
+Route::get('/audit/progress', [AuditTrackerController::class, 'index'])->name('audit.progress');
 
 // P0-1: NOC Command Console
 Route::get('/noc/dashboard', [NocConsoleController::class, 'dashboard'])->name('noc.dashboard');

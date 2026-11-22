@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AiCopilotController;
+use App\Http\Controllers\AuditTrackerController;
 use App\Http\Controllers\Api\V1\BillingLifecycleController;
 use App\Http\Controllers\Api\V1\CardPaymentController;
 use App\Http\Controllers\Api\V1\CommercialAndResellerController;
@@ -47,6 +48,9 @@ Route::prefix('v1')->group(function (): void {
             'redis' => (string) $redisPing,
         ]);
     });
+
+    // Gemini Progress Tracking & Audit Endpoint
+    Route::get('/gemini/audit-tracker', [AuditTrackerController::class, 'api']);
 
     // Phase 4: Prometheus SLA Scrape Endpoint
     Route::get('/metrics', [MetricsController::class, 'metrics']);

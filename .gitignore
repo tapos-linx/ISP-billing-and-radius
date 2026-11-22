@@ -32,3 +32,4 @@ __pycache__/
 backend/bootstrap/cache/*.php
 !backend/bootstrap/cache/.gitignore
 .phpunit.result.cache
+OpenJarvis/
