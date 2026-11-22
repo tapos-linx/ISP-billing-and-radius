@@ -5,11 +5,13 @@ declare(strict_types=1);
 use App\Http\Controllers\AuditTrackerController;
 use App\Http\Controllers\HotspotWebController;
 use App\Http\Controllers\NocConsoleController;
+use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\SelfCareController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SelfCareController::class, 'index'])->name('home');
 Route::get('/self-care', [SelfCareController::class, 'index'])->name('self-care.index');
+Route::get('/portal/dashboard', [PortalDashboardController::class, 'index'])->name('portal.dashboard');
 Route::post('/self-care/pay/{gateway}', [SelfCareController::class, 'initiatePayment'])->name('self-care.pay');
 Route::post('/two-factor-challenge', [SelfCareController::class, 'twoFactorChallenge'])->name('two-factor.challenge');
 Route::post('/self-care/2fa/toggle', [SelfCareController::class, 'toggleTwoFactor'])->name('self-care.2fa.toggle');

@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Providers\AppServiceProvider;
-use Barryvdh\DomPDF\ServiceProvider as DomPdfServiceProvider;
+use App\Providers\Filament\AdminPanelProvider;
+use Barryvdh\DomPDF\ServiceProvider;
 
 return [
     AppServiceProvider::class,
-    DomPdfServiceProvider::class,
+    AdminPanelProvider::class,
+    ServiceProvider::class,
 ];

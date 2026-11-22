@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\SupportBotController;
 use App\Http\Controllers\Api\V1\TenantController;
 use App\Http\Controllers\Api\V1\TrafficAndAaaController;
 use App\Http\Controllers\AuditTrackerController;
+use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Middleware\VerifyMfsReplayProtection;
 use App\Jobs\ExpireOverdueSubscribersJob;
 use Illuminate\Support\Facades\DB;
@@ -52,6 +53,9 @@ Route::prefix('v1')->group(function (): void {
 
     // Gemini Progress Tracking & Audit Endpoint
     Route::get('/gemini/audit-tracker', [AuditTrackerController::class, 'api']);
+
+    // Fiber Prism Subscriber Portal Live Telemetry
+    Route::get('/portal/status', [PortalDashboardController::class, 'status']);
 
     // Phase 4: Prometheus SLA Scrape Endpoint
     Route::get('/metrics', [MetricsController::class, 'metrics']);
