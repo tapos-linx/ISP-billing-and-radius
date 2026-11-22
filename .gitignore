@@ -22,6 +22,12 @@ infra/secrets/
 # Dynamic backups
 backups/
 
+# Python virtual environment & test cache
+.venv_a2ui/
+.pytest_cache/
+__pycache__/
+*.pyc
+
 # Laravel caches
 backend/bootstrap/cache/*.php
 !backend/bootstrap/cache/.gitignore
