@@ -1,0 +1,17 @@
+apiVersion: v2
+name: isp-carrier-stack
+description: Production Multi-Region Carrier Helm Chart for ISP Billing, Citus 16-Shard Database, FreeRADIUS AAA, ClickHouse IPDR & Redis Sentinel
+type: application
+version: 2.3.0
+appVersion: 2.3.0
+keywords:
+  - isp
+  - billing
+  - freeradius
+  - citus
+  - clickhouse
+  - telco
+  - aaa
+maintainers:
+  - name: Tapos
+    email: tapos.cpl@gmail.com

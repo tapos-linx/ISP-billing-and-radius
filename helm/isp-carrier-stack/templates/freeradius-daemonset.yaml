@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Release.Name }}-freeradius
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/component: freeradius-aaa
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/component: freeradius-aaa
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/component: freeradius-aaa
+    spec:
+      hostNetwork: {{ .Values.freeradius.hostNetwork }}
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        {{- toYaml .Values.freeradius.nodeSelector | nindent 8 }}
+      containers:
+        - name: freeradius
+          image: {{ .Values.freeradius.image }}
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "NET_BIND_SERVICE"]
+          ports:
+            - containerPort: {{ .Values.freeradius.ports.auth }}
+              hostPort: {{ .Values.freeradius.ports.auth }}
+              protocol: UDP
+              name: radius-auth
+            - containerPort: {{ .Values.freeradius.ports.acct }}
+              hostPort: {{ .Values.freeradius.ports.acct }}
+              protocol: UDP
+              name: radius-acct
+            - containerPort: {{ .Values.freeradius.ports.coa }}
+              hostPort: {{ .Values.freeradius.ports.coa }}
+              protocol: UDP
+              name: radius-coa
+          env:
+            - name: POSTGRES_HOST
+              value: "{{ .Release.Name }}-citus-coordinator"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB
+              value: "isp_billing"
+            - name: POSTGRES_USER
+              value: "radius_user"
+          resources:
+            {{- toYaml .Values.freeradius.resources | nindent 12 }}
+          volumeMounts:
+            - name: secrets
+              mountPath: /run/secrets
+              readOnly: true
+      volumes:
+        - name: secrets
+          emptyDir:
+            medium: Memory

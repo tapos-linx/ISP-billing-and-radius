@@ -1,0 +1,47 @@
+{{- if .Values.vault.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-vault-templates
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+data:
+  vault-agent-config.hcl: |
+    exit_after_auth = false
+    pid_file = "/home/vault/pidfile"
+
+    auto_auth {
+      method "kubernetes" {
+        mount_path = "auth/kubernetes"
+        config = {
+          role = "{{ .Values.vault.role }}"
+        }
+      }
+
+      sink "file" {
+        config = {
+          path = "/home/vault/.vault-token"
+        }
+      }
+    }
+
+    template {
+      destination = "/run/secrets/db_password"
+      contents = "{{`{{ with secret \"`}}{{ .Values.vault.secretsPath }}{{`\" }}{{ .Data.data.db_password }}{{ end }}`}}"
+    }
+
+    template {
+      destination = "/run/secrets/redis_password"
+      contents = "{{`{{ with secret \"`}}{{ .Values.vault.secretsPath }}{{`\" }}{{ .Data.data.redis_password }}{{ end }}`}}"
+    }
+
+    template {
+      destination = "/run/secrets/radius_secret"
+      contents = "{{`{{ with secret \"`}}{{ .Values.vault.secretsPath }}{{`\" }}{{ .Data.data.radius_secret }}{{ end }}`}}"
+    }
+
+    template {
+      destination = "/run/secrets/bkash_secret"
+      contents = "{{`{{ with secret \"`}}{{ .Values.vault.secretsPath }}{{`\" }}{{ .Data.data.bkash_secret }}{{ end }}`}}"
+    }
+{{- end }}

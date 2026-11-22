@@ -1,0 +1,101 @@
+global:
+  environment: production
+  clusterDomain: cluster.local
+  storageClass: "fast-nvme"
+
+# HashiCorp Vault Agent Secret Sidecar Injection
+vault:
+  enabled: true
+  role: "isp-billing-carrier"
+  vaultAddress: "https://vault.internal.carrier.net:8200"
+  secretsPath: "secret/data/carrier"
+
+# Citus Distributed PostgreSQL 16 Cluster
+citus:
+  coordinator:
+    replicas: 1
+    image: citusdata/citus:12.1.3-alpine
+    resources:
+      requests:
+        cpu: "2000m"
+        memory: "4Gi"
+      limits:
+        cpu: "4000m"
+        memory: "8Gi"
+    storageSize: 200Gi
+  workers:
+    replicas: 2
+    image: citusdata/citus:12.1.3-alpine
+    shardsPerWorker: 8
+    resources:
+      requests:
+        cpu: "2000m"
+        memory: "4Gi"
+      limits:
+        cpu: "4000m"
+        memory: "8Gi"
+    storageSize: 500Gi
+
+# FreeRADIUS 3.2.x AAA DaemonSet (HostNetwork for Sub-5ms UDP Latency)
+freeradius:
+  image: freeradius/freeradius-server:latest
+  hostNetwork: true
+  nodeSelector:
+    topology.carrier.net/role: "edge-bng-gw"
+  ports:
+    auth: 1812
+    acct: 1813
+    coa: 3799
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "2Gi"
+
+# ClickHouse IPDR 2-Year Regulatory Retention Engine
+clickhouse:
+  image: clickhouse/clickhouse-server:24.3-alpine
+  replicas: 2
+  storageSize: 1000Gi
+  resources:
+    requests:
+      cpu: "2000m"
+      memory: "4Gi"
+    limits:
+      cpu: "8000m"
+      memory: "16Gi"
+
+# Redis 7 High-Availability Sentinel Bus
+redis:
+  image: redis:7.2-alpine
+  replicas: 3
+  sentinelReplicas: 3
+  maxmemory: "4Gi"
+  maxmemoryPolicy: "noeviction"
+
+# Carrier Backend API (Laravel Octane + Workerman)
+backend:
+  image: "ghcr.io/tapos-linx/isp-billing-backend:2.3.0"
+  autoscaling:
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "2Gi"
+
+# Ingress Controller Configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  hostname: "billing.carrier.net"
+  tls:
+    enabled: true
+    secretName: "carrier-tls-cert"

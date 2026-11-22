@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\V1\NetworkAndFieldIntelligenceController;
 use App\Http\Controllers\Api\V1\NetworkOperationsController;
 use App\Http\Controllers\Api\V1\SipSignalingController;
 use App\Http\Controllers\Api\V1\SubscriberController;
+use App\Http\Controllers\Api\V1\SupportBotController;
 use App\Http\Controllers\Api\V1\TenantController;
 use App\Http\Controllers\Api\V1\TrafficAndAaaController;
 use App\Http\Middleware\VerifyMfsReplayProtection;
@@ -324,5 +325,20 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/boost', [MobileSelfCareController::class, 'boost']);
         Route::post('/devices/register', [MobileSelfCareController::class, 'registerDevice']);
         Route::get('/notifications', [MobileSelfCareController::class, 'notifications']);
+
+        // Self-Care Client URL Aliases
+        Route::prefix('selfcare')->group(function (): void {
+            Route::get('/dashboard', [MobileSelfCareController::class, 'profile']);
+            Route::get('/usage', [MobileSelfCareController::class, 'usage']);
+            Route::get('/optical-diagnostics', [MobileSelfCareController::class, 'diagnose']);
+            Route::post('/speed-boost', [MobileSelfCareController::class, 'boost']);
+            Route::post('/device/register', [MobileSelfCareController::class, 'registerDevice']);
+        });
+    });
+
+    // Release 2.3: Tier-1 AI Autonomous Support Bot (WhatsApp & Web Copilot)
+    Route::prefix('support/bot')->group(function (): void {
+        Route::post('/query', [SupportBotController::class, 'query']);
+        Route::match(['get', 'post'], '/webhook', [SupportBotController::class, 'whatsappWebhook']);
     });
 });
