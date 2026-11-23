@@ -134,12 +134,15 @@ class GroupBNetworkAndRadiusTest extends TestCase
     public function test_clients_conf_generator_renders_hardened_clients_and_forbids_wildcard_routes(): void
     {
         $generator = app(ClientsConfGenerator::class);
-        $randOctet = mt_rand(10, 240);
-        $peerIp = "10.200.{$randOctet}.5";
+        $rand2 = mt_rand(10, 240);
+        $rand3 = mt_rand(1, 250);
+        $peerIp = "10.{$rand2}.{$rand3}.5";
         $shortname = 'edge_wg_'.Str::random(6);
 
+        DB::table('wireguard_peers')->where('wireguard_ip', $peerIp)->delete();
+
         // 1. Seed a valid WireGuard peer
-        DB::table('wireguard_peers')->insert([
+        $peerId = DB::table('wireguard_peers')->insertGetId([
             'tenant_id' => 1,
             'shortname' => $shortname,
             'wireguard_ip' => $peerIp,
@@ -150,12 +153,16 @@ class GroupBNetworkAndRadiusTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $rendered = $generator->render();
+        try {
+            $rendered = $generator->render();
 
-        $this->assertStringContainsString("client {$shortname} {", $rendered);
-        $this->assertStringContainsString("ipaddr = {$peerIp}", $rendered);
-        $this->assertStringContainsString('require_message_authenticator = yes', $rendered);
-        $this->assertStringContainsString('Hardened_Wg_Radius_Secret_2026!', $rendered);
+            $this->assertStringContainsString("client {$shortname} {", $rendered);
+            $this->assertStringContainsString("ipaddr = {$peerIp}", $rendered);
+            $this->assertStringContainsString('require_message_authenticator = yes', $rendered);
+            $this->assertStringContainsString('Hardened_Wg_Radius_Secret_2026!', $rendered);
+        } finally {
+            DB::table('wireguard_peers')->where('id', $peerId)->delete();
+        }
 
         // 2. Test Security Invariant: 0.0.0.0 or 0.0.0.0/0 MUST throw InvalidArgumentException
         $this->expectException(InvalidArgumentException::class);
