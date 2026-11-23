@@ -29,7 +29,7 @@ class AuditTrackerController extends Controller
                 'last_audit_date' => '2026-11-23T21:55:00+06:00',
                 'quality_gates' => [
                     'tests_passed' => 138,
-                    'assertions' => 1047,
+                    'assertions' => 1048,
                     'test_failures' => 0,
                     'phpstan_level' => 'Level 6 (0 Errors across 231 files)',
                     'code_style' => 'Laravel Pint (0 Issues across 289 files)',
