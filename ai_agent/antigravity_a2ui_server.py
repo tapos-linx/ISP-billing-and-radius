@@ -3,12 +3,12 @@
 Key Features:
 - Implements `AntigravityAgent` + `create_antigravity_app` scoped strictly to this repo.
 - Serves A2UI Component Catalog with whitelisted NOC components:
-    * SubscriberSessionCard
-    * OpticalSignalGauge
-    * CoaDisconnectConfirmButton (bound to POST /api/v1/coa/disconnect in docs/openapi.yaml)
+    * SubscriberSessionCard (PPPoE status, IP, rate limit 20M/20M, framed_pool)
+    * OpticalSignalGauge (OLT/ONU Rx dBm health)
+    * CoaDisconnectConfirmButton (bound to POST /api/v1/coa/disconnect in docs/openapi.yaml with explicit confirmation)
 - Provides standard AG-UI SSE streaming endpoint at POST / and /capabilities.
 - Implements local proxy for RFC 5176 CoA PoD kick at POST /api/v1/coa/disconnect matching docs/openapi.yaml.
-- Loads configuration securely from .env.
+- Loads configuration securely from .env on 127.0.0.1:8010.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ if str(REPO_ROOT) not in sys.path:
 ENV_FILE = REPO_ROOT / ".env"
 load_dotenv(dotenv_path=ENV_FILE, override=False)
 
-from ag_ui_antigravity import AntigravityAgent, add_antigravity_fastapi_endpoint
+from ag_ui_antigravity import AntigravityAgent, create_antigravity_app
 from ag_ui_a2ui_toolkit import (
     A2UI_OPERATIONS_KEY,
     DEFAULT_SURFACE_ID,
@@ -59,11 +59,11 @@ from ai_agent.noc_catalog import (
 logger = logging.getLogger("antigravity_a2ui_server")
 logging.basicConfig(level=logging.INFO)
 
-# Configuration from .env
+# Configuration strictly from .env (never hardcoded)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_FLASH_MODEL", os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", os.getenv("GEMINI_FLASH_MODEL", "gemini-3-flash-preview"))
 RADIUS_COA_PORT = int(os.getenv("RADIUS_COA_PORT", "3799"))
-RADIUS_SECRET = os.getenv("RADIUS_SECRET", "secure_radius_secret_key_2026")
+RADIUS_SECRET = os.getenv("RADIUS_SECRET", "")
 
 
 # ---------------------------------------------------------------------------
@@ -98,6 +98,8 @@ def render_noc_subscriber_surface(
     plan: str,
     rx_dbm: float,
     status: str = "active",
+    rate_limit: str = "20M/20M",
+    framed_pool: str = "standard_pool",
     uptime: str = "3h 24m",
     vlan_id: int = 100,
     surface_id: str = "noc-subscriber-surface",
@@ -112,6 +114,8 @@ def render_noc_subscriber_surface(
         plan: Tariff plan (e.g. 20M/20M).
         rx_dbm: Optical Rx power in dBm (e.g. -21.2).
         status: Status 'active', 'expired', or 'suspended'.
+        rate_limit: Configured rate limit (e.g. 20M/20M).
+        framed_pool: RADIUS framed pool (e.g. standard_pool, walled_garden_pool).
         uptime: Session uptime.
         vlan_id: Access VLAN.
         surface_id: A2UI Surface ID.
@@ -127,6 +131,8 @@ def render_noc_subscriber_surface(
             "mac_address": mac_address,
             "nas_ip": nas_ip,
             "plan": plan,
+            "rate_limit": rate_limit,
+            "framed_pool": framed_pool,
             "status": status,
             "uptime": uptime,
             "vlan_id": vlan_id,
@@ -149,6 +155,8 @@ def render_noc_subscriber_surface(
             "label": f"PoD Kick {username} (UDP 3799)",
             "api_endpoint": "/api/v1/coa/disconnect",
             "method": "POST",
+            "require_confirmation": True,
+            "confirmation_message": f"Confirm immediate RFC 5176 PoD Disconnect-Request for {username} to NAS {nas_ip}?",
             "payload": {
                 "username": username,
                 "nas_ip": nas_ip,
@@ -198,26 +206,10 @@ def create_noc_agent() -> AntigravityAgent:
 
 
 # ---------------------------------------------------------------------------
-# FastAPI App Construction
+# FastAPI App Construction using ag-ui-antigravity create_antigravity_app
 # ---------------------------------------------------------------------------
 def create_app() -> FastAPI:
     """Builds the FastAPI application with AG-UI SSE endpoint, A2UI catalog, and OpenAPI CoA endpoint."""
-    app = FastAPI(
-        title="ISP NOC Copilot A2UI + AG-UI Server",
-        version="1.0.0",
-        description="Sandboxed Python FastAPI service using ag-ui-antigravity and A2UI.",
-    )
-
-    # CORS configuration for local React clients
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # Mount AG-UI Antigravity Agent
     agent = create_noc_agent()
     catalog_schema = get_noc_catalog_schema()
 
@@ -236,12 +228,20 @@ def create_app() -> FastAPI:
         },
     }
 
-    # Mount AG-UI POST / and GET /capabilities
-    add_antigravity_fastapi_endpoint(
-        app=app,
+    # Mount AG-UI using ag-ui-antigravity create_antigravity_app
+    app = create_antigravity_app(
         agent=agent,
         path="/",
         capabilities=capabilities_payload,
+    )
+
+    # CORS configuration for local React clients
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     # Health check endpoint
@@ -259,6 +259,11 @@ def create_app() -> FastAPI:
     @app.get("/api/v1/a2ui/catalog")
     async def get_catalog():
         return catalog_schema
+
+    # Explicit /capabilities endpoint mirroring AG-UI capabilities
+    @app.get("/capabilities")
+    async def get_capabilities():
+        return capabilities_payload
 
     # RFC 5176 CoA PoD Kick endpoint bound to CoaDisconnectConfirmButton
     @app.post(
@@ -283,17 +288,13 @@ def create_app() -> FastAPI:
             latency_ms=14.2,
         )
 
-    # Clean lifecycle shutdown
-    @app.on_event("shutdown")
-    async def on_shutdown():
-        await agent.close()
-
     return app
 
 
 app = create_app()
 
 if __name__ == "__main__":
-    port = int(os.getenv("A2UI_PORT", "8000"))
-    logger.info("Starting AG-UI Antigravity A2UI Server on http://127.0.0.1:%s", port)
-    uvicorn.run("ai_agent.antigravity_a2ui_server:app", host="0.0.0.0", port=port, reload=False)
+    host = os.getenv("A2UI_HOST", "127.0.0.1")
+    port = int(os.getenv("A2UI_PORT", "8010"))
+    logger.info("Starting AG-UI Antigravity A2UI Server on http://%s:%s", host, port)
+    uvicorn.run("ai_agent.antigravity_a2ui_server:app", host=host, port=port, reload=False)

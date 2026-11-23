@@ -91,6 +91,14 @@ def test_render_noc_subscriber_surface():
     assert "OpticalSignalGauge" in comp_types
     assert "CoaDisconnectConfirmButton" in comp_types
 
+    sub_card = next(c for c in components if c["component"] == "SubscriberSessionCard")
+    assert sub_card["rate_limit"] == "20M/20M"
+    assert sub_card["framed_pool"] == "standard_pool"
+
+    coa_btn = next(c for c in components if c["component"] == "CoaDisconnectConfirmButton")
+    assert coa_btn["require_confirmation"] is True
+    assert "Confirm immediate RFC 5176 PoD" in coa_btn["confirmation_message"]
+
 
 def test_catalog_components_validation():
     catalog = create_noc_component_catalog()

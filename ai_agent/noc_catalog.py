@@ -1,9 +1,9 @@
 """ISP NOC Copilot Component Catalog for A2UI.
 
 Whitelisted components:
-1. SubscriberSessionCard: Displays subscriber session details (username, IP, MAC, NAS IP, tariff plan, status, uptime)
+1. SubscriberSessionCard: Displays subscriber session details (username, IP, MAC, NAS IP, tariff plan, rate limit, framed pool, status, uptime)
 2. OpticalSignalGauge: Visual gauge for OLT/ONT optical Rx power in dBm with signal health classification
-3. CoaDisconnectConfirmButton: Interactive button bound to POST /api/v1/coa/disconnect (RFC 5176 PoD Kick)
+3. CoaDisconnectConfirmButton: Interactive button bound to POST /api/v1/coa/disconnect (RFC 5176 PoD Kick with explicit confirmation)
 """
 
 from __future__ import annotations
@@ -28,6 +28,12 @@ class SubscriberSessionCard(ComponentCommon):
     mac_address: str = Field(..., description="Calling station MAC address")
     nas_ip: str = Field(..., description="BNG / NAS Router IP address")
     plan: str = Field(..., description="Bandwidth / Tariff plan (e.g., 20M/20M)")
+    rate_limit: Optional[str] = Field(
+        default="20M/20M", description="Configured bandwidth rate limit (e.g., 20M/20M)"
+    )
+    framed_pool: Optional[str] = Field(
+        default="standard_pool", description="RADIUS Framed-Pool assignment (e.g. standard_pool, walled_garden_pool)"
+    )
     status: Literal["active", "expired", "suspended"] = Field(
         default="active", description="Session state"
     )
@@ -73,6 +79,14 @@ class CoaDisconnectConfirmButton(ComponentCommon):
         description="Target REST API path defined in docs/openapi.yaml",
     )
     method: Literal["POST"] = Field(default="POST", description="HTTP method")
+    require_confirmation: bool = Field(
+        default=True,
+        description="Enforce explicit modal confirmation before dispatching CoA PoD kick",
+    )
+    confirmation_message: str = Field(
+        default="Confirm immediate RFC 5176 PoD Disconnect-Request to NAS? Active session will be terminated.",
+        description="Confirmation prompt dialog text",
+    )
     payload: Dict[str, Any] = Field(
         default_factory=dict,
         description="Bound request body matching OpenAPI schema (username, nas_ip, acct_session_id)",
@@ -99,9 +113,3 @@ def get_noc_catalog_schema() -> Dict[str, Any]:
     """Returns the serialized JSON Schema dictionary of the NOC component catalog."""
     catalog = create_noc_component_catalog()
     return catalog.to_json()
-
-
-if __name__ == "__main__":
-    catalog = create_noc_component_catalog()
-    print(f"Catalog ID: {catalog.catalog_id}")
-    print(json.dumps(catalog.to_json(), indent=2))

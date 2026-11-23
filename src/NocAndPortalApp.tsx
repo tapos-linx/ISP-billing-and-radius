@@ -24,6 +24,8 @@ export interface A2UISubscriberSessionCardProps {
   mac_address: string;
   nas_ip: string;
   plan: string;
+  rate_limit?: string;
+  framed_pool?: string;
   status?: 'active' | 'expired' | 'suspended';
   uptime?: string;
   vlan_id?: number;
@@ -46,6 +48,8 @@ export interface A2UICoaDisconnectConfirmButtonProps {
   label?: string;
   api_endpoint?: string;
   method?: string;
+  require_confirmation?: boolean;
+  confirmation_message?: string;
   payload?: Record<string, any>;
   onExecute?: (username: string, nas_ip: string, result: any) => void;
   onError?: (err: Error) => void;
@@ -58,6 +62,8 @@ export const SubscriberSessionCard: React.FC<A2UISubscriberSessionCardProps> = (
   mac_address,
   nas_ip,
   plan,
+  rate_limit = '20M/20M',
+  framed_pool = 'standard_pool',
   status = 'active',
   uptime = '3h 24m',
   vlan_id = 100,
@@ -76,11 +82,16 @@ export const SubscriberSessionCard: React.FC<A2UISubscriberSessionCardProps> = (
           <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
           <h3 className="text-sm font-bold tracking-tight text-white font-mono">{username}</h3>
         </div>
-        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${statusColor}`}>
-          {status}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
+            {framed_pool}
+          </span>
+          <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${statusColor}`}>
+            {status}
+          </span>
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
         <div>
           <span className="text-slate-500 block text-[11px]">Framed IP</span>
           <span className="font-mono text-cyan-300 font-semibold">{ip_address}</span>
@@ -88,6 +99,10 @@ export const SubscriberSessionCard: React.FC<A2UISubscriberSessionCardProps> = (
         <div>
           <span className="text-slate-500 block text-[11px]">Tariff Plan</span>
           <span className="font-semibold text-white">{plan}</span>
+        </div>
+        <div>
+          <span className="text-slate-500 block text-[11px]">Rate Limit</span>
+          <span className="font-mono text-emerald-300 font-semibold">{rate_limit}</span>
         </div>
         <div>
           <span className="text-slate-500 block text-[11px]">Caller MAC</span>
@@ -168,18 +183,21 @@ export const CoaDisconnectConfirmButton: React.FC<A2UICoaDisconnectConfirmButton
   label = 'PoD Kick (RFC 5176 UDP 3799)',
   api_endpoint = '/api/v1/coa/disconnect',
   method = 'POST',
+  require_confirmation = true,
+  confirmation_message = 'Confirm immediate RFC 5176 PoD Disconnect-Request? Active session will be kicked.',
   payload,
   onExecute,
   onError,
 }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleAction = async () => {
     setLoading(true);
     setSuccess(false);
     try {
-      const serverBase = (typeof process !== 'undefined' && process.env?.REACT_APP_A2UI_SERVER_URL) || 'http://127.0.0.1:8000';
+      const serverBase = (typeof process !== 'undefined' && process.env?.REACT_APP_A2UI_SERVER_URL) || 'http://127.0.0.1:8010';
       const endpoint = api_endpoint.startsWith('http') ? api_endpoint : `${serverBase}${api_endpoint}`;
       const body = payload || { username, nas_ip, acct_session_id };
 
@@ -208,26 +226,61 @@ export const CoaDisconnectConfirmButton: React.FC<A2UICoaDisconnectConfirmButton
       <div className="text-xs text-slate-400">
         RFC 5176 Session Control for <span className="font-mono text-cyan-300 font-semibold">{username}</span> (NAS: {nas_ip})
       </div>
-      <button
-        type="button"
-        disabled={loading}
-        onClick={handleAction}
-        className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-          success
-            ? 'bg-emerald-600 text-white'
-            : loading
-            ? 'bg-rose-900/50 text-rose-300 cursor-not-allowed'
-            : 'bg-rose-700 hover:bg-rose-600 text-white shadow-md hover:shadow-rose-900/50'
-        }`}
-      >
-        {loading ? (
-          <span>Transmitting RFC 5176 PoD UDP 3799...</span>
-        ) : success ? (
-          <span>✓ Disconnect-ACK Received (&lt;500ms)</span>
-        ) : (
-          <span>{label}</span>
-        )}
-      </button>
+      {showConfirm ? (
+        <div className="flex flex-col gap-2 p-3 bg-rose-950/60 border border-rose-500/40 rounded-lg">
+          <p className="text-xs text-rose-200 font-semibold">
+            {confirmation_message}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                setShowConfirm(false);
+                handleAction();
+              }}
+              className="flex-1 py-1.5 px-3 bg-rose-600 hover:bg-rose-500 text-white rounded text-xs font-bold transition"
+            >
+              Confirm Disconnect
+            </button>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => setShowConfirm(false)}
+              className="py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => {
+            if (require_confirmation) {
+              setShowConfirm(true);
+            } else {
+              handleAction();
+            }
+          }}
+          className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+            success
+              ? 'bg-emerald-600 text-white'
+              : loading
+              ? 'bg-rose-900/50 text-rose-300 cursor-not-allowed'
+              : 'bg-rose-700 hover:bg-rose-600 text-white shadow-md hover:shadow-rose-900/50'
+          }`}
+        >
+          {loading ? (
+            <span>Transmitting RFC 5176 PoD UDP 3799...</span>
+          ) : success ? (
+            <span>✓ Disconnect-ACK Received (&lt;500ms)</span>
+          ) : (
+            <span>{label}</span>
+          )}
+        </button>
+      )}
     </div>
   );
 };
@@ -258,7 +311,7 @@ export default function NocAndPortalApp() {
 
   const handleCoaKick = async (username: string) => {
     try {
-      const serverBase = (typeof process !== 'undefined' && process.env?.REACT_APP_A2UI_SERVER_URL) || 'http://127.0.0.1:8000';
+      const serverBase = (typeof process !== 'undefined' && process.env?.REACT_APP_A2UI_SERVER_URL) || 'http://127.0.0.1:8010';
       const res = await fetch(`${serverBase}/api/v1/coa/disconnect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -290,7 +343,7 @@ export default function NocAndPortalApp() {
     setAiStreaming(true);
     setAiText('');
 
-    const serverUrl = (typeof process !== 'undefined' && process.env?.REACT_APP_A2UI_SERVER_URL) || 'http://127.0.0.1:8000';
+    const serverUrl = (typeof process !== 'undefined' && process.env?.REACT_APP_A2UI_SERVER_URL) || 'http://127.0.0.1:8010';
 
     try {
       const requestPayload = {

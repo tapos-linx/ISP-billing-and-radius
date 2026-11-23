@@ -152,7 +152,7 @@ require '/opt/laravel_bss/vendor/autoload.php';
 \$coa = app(App\Services\Radius\RadiusCoaService::class);
 \$success = \$coa->disconnectSession(
     bngIp: '10.10.0.2',
-    secret: 'secure_radius_secret_key_2026',
+    secret: '${RADIUS_SECRET}',
     username: 'mirpur_user_01'
 );
 
@@ -188,7 +188,7 @@ add address=192.168.1.50 \
     authentication-port=1812 \
     accounting-port=1813 \
     timeout=3s \
-    secret="secure_radius_secret_key_2026" \
+    secret="${RADIUS_SECRET}" \
     comment="Ubuntu 24.04 FreeRADIUS Primary"
 
 # 4. Enable PPP AAA Authentication & 5-Minute Interim Accounting
@@ -377,3 +377,4 @@ Or execute the full CI/CD suite:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\run_local_ci_checks.ps1
 ```
+

@@ -78,7 +78,7 @@ services:
     image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: isp_postgres_exporter
     environment:
-      DATA_SOURCE_NAME: "postgresql://${DB_USERNAME:-isp_admin}:${DB_PASSWORD:-secure_isp_password_2026}@citus_master:5432/${DB_DATABASE:-isp_bss_oss}?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://${DB_USERNAME:-isp_admin}:${DB_PASSWORD:-${DB_PASSWORD}}@citus_master:5432/${DB_DATABASE:-isp_bss_oss}?sslmode=disable"
     ports:
       - "${PG_EXPORTER_BIND_IP:-127.0.0.1}:9187:9187"
     restart: always
@@ -125,3 +125,4 @@ networks:
 volumes:
   loki_data:
   isp_logs:
+

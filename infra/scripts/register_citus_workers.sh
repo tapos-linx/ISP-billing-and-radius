@@ -15,7 +15,7 @@ docker() {
 
 DB_USER="${DB_USER:-isp_admin}"
 DB_NAME="${DB_NAME:-isp_bss_oss}"
-DB_PASS="${DB_PASSWORD:-secure_isp_password_2026}"
+DB_PASS="${DB_PASSWORD:-${DB_PASSWORD}}"
 
 echo "Configuring Citus coordinator host and credentials..."
 docker exec -u postgres citus_master sh -c "echo '*:*:*:${DB_USER}:${DB_PASS}' > /var/lib/postgresql/.pgpass && chmod 600 /var/lib/postgresql/.pgpass"
@@ -39,3 +39,4 @@ END \$\$;
 
 echo "Active Citus Worker Nodes:"
 docker exec citus_master psql -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT * FROM citus_get_active_worker_nodes();"
+

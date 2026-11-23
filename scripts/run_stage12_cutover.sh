@@ -37,7 +37,7 @@ NC='\033[0m'
 
 echo -e "\n${CYAN}=== Stage 12: Zero-Downtime Production Cutover & Rollback Drill ===${NC}"
 
-RADIUS_SECRET="secure_radius_secret_key_2026"
+RADIUS_SECRET="${RADIUS_SECRET}"
 if [[ -f "${REPO_ROOT}/secrets/radius_secret.txt" ]]; then
     RADIUS_SECRET="$(tr -d '\r\n' < "${REPO_ROOT}/secrets/radius_secret.txt")"
 fi
@@ -60,3 +60,4 @@ python3 scripts/test_stage12_cutover_and_pilot.py
 echo -e "\n${GREEN}==========================================================================${NC}"
 echo -e "${GREEN}   STAGE 12 PRODUCTION CUTOVER & ROLLBACK: 100% VERIFIED & READY${NC}"
 echo -e "${GREEN}==========================================================================${NC}\n"
+

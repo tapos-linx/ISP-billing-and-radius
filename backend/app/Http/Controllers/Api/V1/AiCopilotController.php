@@ -160,7 +160,7 @@ final class AiCopilotController extends Controller
             $lastAuth = reset($ctx['recent_auths']);
             if (isset($lastAuth->reply) && str_contains(strtolower($lastAuth->reply), 'reject')) {
                 $lines[] = "CAUSE: RADIUS Authentication Rejected ({$lastAuth->reply}). Cleartext password mismatch or invalid MAC binding.";
-                $lines[] = "CLI Check: radtest {$username} <password> 127.0.0.1 0 secure_radius_secret_key_2026";
+                $lines[] = "CLI Check: radtest {$username} <password> 127.0.0.1 0 \${RADIUS_SECRET}";
                 $lines[] = 'Fix: Reset PPPoE subscriber credentials in Citus radcheck and sync via RadiusSyncService.';
 
                 return implode("\n", $lines);

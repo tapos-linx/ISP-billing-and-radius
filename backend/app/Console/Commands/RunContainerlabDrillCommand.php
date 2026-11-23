@@ -117,7 +117,7 @@ class RunContainerlabDrillCommand extends Command
         $coaSuccess = $coaService->changeBandwidth(
             username: $username,
             nasIp: '172.20.20.10',
-            secret: 'secure_radius_secret_key_2026',
+            secret: '${RADIUS_SECRET}',
             rateLimit: '200M/200M',
             coaPort: 3799,
             subscriberId: (string) $subscriber->subscriber_id
@@ -152,7 +152,7 @@ class RunContainerlabDrillCommand extends Command
 
         $this->newLine();
         $this->info('================================================================================');
-        $this->info('   CONTAINERLAB MIKROTIK CHR DRILL PASSED — ALL 5 GATES 100% OPERATIONAL');
+        $this->info('   CONTAINERLAB MIKROTIK CHR DRILL PASSED â€” ALL 5 GATES 100% OPERATIONAL');
         $this->info('================================================================================');
 
         return 0;

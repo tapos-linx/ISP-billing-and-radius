@@ -48,7 +48,7 @@ return [
     ],
 
     'radius' => [
-        'secret' => $resolveSecret('radius_secret', env('RADIUS_SECRET', 'secure_radius_secret_key_2026')),
+        'secret' => $resolveSecret('radius_secret', env('RADIUS_SECRET', '${RADIUS_SECRET}')),
     ],
 
     'gemini' => [

@@ -30,7 +30,8 @@ foreach ($file in $targets) {
         }
     }
     if ($updated -ne $content) {
-        Set-Content -Path $file.FullName -Value $updated -Encoding UTF8
+        $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+        [System.IO.File]::WriteAllText($file.FullName, $updated, $utf8NoBom)
         Write-Host "[FIXED] Scrubbed $($file.FullName)" -ForegroundColor Green
     }
 }

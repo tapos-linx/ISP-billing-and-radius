@@ -158,7 +158,7 @@ if [[ -z "${RADIUS_SECRET}" ]]; then
     elif [[ -f "${REPO_ROOT}/infra/secrets/radius_secret.txt" ]]; then
         RADIUS_SECRET="$(tr -d '\r\n' < "${REPO_ROOT}/infra/secrets/radius_secret.txt")"
     elif [[ "${IS_CITUS}" == "true" ]]; then
-        RADIUS_SECRET="secure_radius_secret_key_2026"
+        RADIUS_SECRET="${RADIUS_SECRET}"
     else
         RADIUS_SECRET="testing123"
     fi
@@ -179,3 +179,4 @@ else
 fi
 
 echo -e "\n${GREEN}All local QA checks completed successfully.${NC}"
+

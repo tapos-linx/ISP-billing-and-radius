@@ -77,7 +77,7 @@ class RadiusCoaService
             $secret = trim((string) file_get_contents('/run/secrets/radius_secret'));
         }
         if ($secret === '') {
-            $secret = $nas ? (string) $nas->secret : (string) (config('radius.secret') ?: 'secure_radius_secret_key_2026');
+            $secret = $nas ? (string) $nas->secret : (string) (config('radius.secret') ?: '${RADIUS_SECRET}');
         }
 
         $coaPort = $nas && isset($nas->coa_port) ? (int) $nas->coa_port : self::DEFAULT_COA_PORT;

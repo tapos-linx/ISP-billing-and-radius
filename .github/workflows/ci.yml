@@ -86,7 +86,7 @@ jobs:
         env:
           POSTGRES_DB: isp_bss_oss
           POSTGRES_USER: isp_admin
-          POSTGRES_PASSWORD: secure_isp_password_2026
+          POSTGRES_PASSWORD: ${DB_PASSWORD}
         ports:
           - 5432:5432
         options: >-
@@ -133,7 +133,7 @@ jobs:
 
       - name: Initialize Database Schema, Seeders & Multi-Tenancy
         env:
-          PGPASSWORD: secure_isp_password_2026
+          PGPASSWORD: ${DB_PASSWORD}
         run: |
           for f in $(ls stage1/sql/*.sql | sort); do
             echo "Applying schema: $f"
@@ -148,7 +148,7 @@ jobs:
           DB_PORT: 5432
           DB_DATABASE: isp_bss_oss
           DB_USERNAME: isp_admin
-          DB_PASSWORD: secure_isp_password_2026
+          DB_PASSWORD: ${DB_PASSWORD}
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
           REDIS_PASSWORD: ""
@@ -193,9 +193,9 @@ jobs:
       - name: Generate Local Docker Secrets
         run: |
           mkdir -p secrets
-          echo "secure_isp_password_2026" > secrets/db_password.txt
+          echo "${DB_PASSWORD}" > secrets/db_password.txt
           echo "SecretRedisToken2026!" > secrets/redis_password.txt
-          echo "secure_radius_secret_key_2026" > secrets/radius_secret.txt
+          echo "${RADIUS_SECRET}" > secrets/radius_secret.txt
           echo "sandbox_bkash_secret_2026" > secrets/bkash_secret.txt
           echo "sandbox_nagad_secret_2026" > secrets/nagad_secret.txt
 
@@ -236,3 +236,4 @@ jobs:
         run: |
           docker compose -f infra/monitoring/docker-compose.monitoring.yml down -v --remove-orphans || true
           docker compose -f infra/docker-compose.yml down -v --remove-orphans || true
+

@@ -54,7 +54,7 @@ jobs:
         env:
           POSTGRES_DB: isp_bss_oss
           POSTGRES_USER: isp_admin
-          POSTGRES_PASSWORD: secure_isp_password_2026
+          POSTGRES_PASSWORD: ${DB_PASSWORD}
         ports:
           - 5432:5432
         options: >-
@@ -91,7 +91,7 @@ jobs:
 
       - name: Apply Base Carrier Schema
         env:
-          PGPASSWORD: secure_isp_password_2026
+          PGPASSWORD: ${DB_PASSWORD}
         run: |
           for f in $(ls stage1/sql/*.sql | sort); do
             echo "Applying schema file: $f"
@@ -106,7 +106,7 @@ jobs:
           DB_PORT: 5432
           DB_DATABASE: isp_bss_oss
           DB_USERNAME: isp_admin
-          DB_PASSWORD: secure_isp_password_2026
+          DB_PASSWORD: ${DB_PASSWORD}
         run: php artisan migrate --force
 
       - name: Execute PHPUnit Test Suite
@@ -117,8 +117,9 @@ jobs:
           DB_PORT: 5432
           DB_DATABASE: isp_bss_oss
           DB_USERNAME: isp_admin
-          DB_PASSWORD: secure_isp_password_2026
+          DB_PASSWORD: ${DB_PASSWORD}
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
           REDIS_PASSWORD: ""
         run: ./vendor/bin/phpunit --testdox
+

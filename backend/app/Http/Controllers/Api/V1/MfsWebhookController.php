@@ -277,7 +277,7 @@ final class MfsWebhookController extends Controller
                 $radiusSecret = trim((string) file_get_contents('/run/secrets/radius_secret'));
             }
             if (empty($radiusSecret)) {
-                $radiusSecret = $nas ? $nas->secret : (string) config('services.radius.secret', 'secure_radius_secret_key_2026');
+                $radiusSecret = $nas ? $nas->secret : (string) config('services.radius.secret', '${RADIUS_SECRET}');
             }
 
             $coaPort = $nas ? (int) $nas->coa_port : 3799;

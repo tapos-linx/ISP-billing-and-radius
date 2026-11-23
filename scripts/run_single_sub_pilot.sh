@@ -81,19 +81,19 @@ OPERATIONAL MODES:
 
 EXAMPLES:
   # 1. Print ready-to-paste MikroTik RouterOS v7 RADIUS, CoA & Firewall commands:
-  $0 -s 192.168.1.50 -m 192.168.1.1 -r RadiusSecretKey2026 --print-ros
+  $0 -s 192.168.1.50 -m 192.168.1.1 -r ${RADIUS_SECRET} --print-ros
 
   # 2. Non-destructive Pre-Flight Dry Run against remote Ubuntu + MikroTik CHR:
-  $0 -s 192.168.1.50 -u ubuntu -i ~/.ssh/id_rsa -m 192.168.1.1 -r RadiusSecretKey2026 --dry-run
+  $0 -s 192.168.1.50 -u ubuntu -i ~/.ssh/id_rsa -m 192.168.1.1 -r ${RADIUS_SECRET} --dry-run
 
   # 3. Execute End-to-End Pilot Verification:
-  $0 -s 192.168.1.50 -u ubuntu -i ~/.ssh/id_rsa -m 192.168.1.1 -r RadiusSecretKey2026
+  $0 -s 192.168.1.50 -u ubuntu -i ~/.ssh/id_rsa -m 192.168.1.1 -r ${RADIUS_SECRET}
 
   # 4. Immediate Idempotent Teardown / Cleanup of Pilot Subscriber:
   $0 -s 192.168.1.50 -u ubuntu -i ~/.ssh/id_rsa --cleanup
 
   # 5. Local Execution on the Ubuntu Server itself:
-  $0 -s 127.0.0.1 -m 10.10.0.2 -r secure_radius_secret_key_2026
+  $0 -s 127.0.0.1 -m 10.10.0.2 -r ${RADIUS_SECRET}
 EOF
 }
 
@@ -431,7 +431,7 @@ cleanup_and_rollback() {
         elif command -v docker >/dev/null 2>&1 && docker ps --format '{{.Names}}' | grep -q isp_postgres; then
             docker exec -i isp_postgres psql -U radius_user -d isp_billing -q -c \"${purge_sql}\" 2>/dev/null || true
         elif command -v psql >/dev/null 2>&1; then
-            PGPASSWORD=\"\${DB_PASSWORD:-secure_isp_password_2026}\" psql -U \"\${DB_USER:-isp_admin}\" -d \"\${DB_NAME:-isp_bss_oss}\" -q -c \"${purge_sql}\" 2>/dev/null || true
+            PGPASSWORD=\"\${DB_PASSWORD:-${DB_PASSWORD}}\" psql -U \"\${DB_USER:-isp_admin}\" -d \"\${DB_NAME:-isp_bss_oss}\" -q -c \"${purge_sql}\" 2>/dev/null || true
         fi
     " || log_warn "Notice: PostgreSQL purge completed with fallback."
 
@@ -674,7 +674,7 @@ EXEC_PROVISION="
         docker exec -i isp_postgres psql -U radius_user -d isp_billing -q -c \"${PROVISION_SQL}\"
         docker exec isp_redis redis-cli ${REDIS_CLI_AUTH} del \"radius:auth:${PILOT_USER}\" >/dev/null 2>&1 || true
     else
-        PGPASSWORD=\"\${DB_PASSWORD:-secure_isp_password_2026}\" psql -U \"\${DB_USER:-isp_admin}\" -d \"\${DB_NAME:-isp_bss_oss}\" -q -c \"${PROVISION_SQL}\"
+        PGPASSWORD=\"\${DB_PASSWORD:-${DB_PASSWORD}}\" psql -U \"\${DB_USER:-isp_admin}\" -d \"\${DB_NAME:-isp_bss_oss}\" -q -c \"${PROVISION_SQL}\"
         redis-cli del \"radius:auth:${PILOT_USER}\" >/dev/null 2>&1 || true
     fi
 "
@@ -930,3 +930,4 @@ cleanup_and_rollback
 TRAP_TRIGGERED=1
 log_pass "Pilot workflow completed. Baseline clean."
 exit 0
+
