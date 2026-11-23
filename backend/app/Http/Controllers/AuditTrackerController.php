@@ -166,14 +166,14 @@ class AuditTrackerController extends Controller
                 [
                     'id' => 'DOC-VOIP-01',
                     'title' => 'FreeSWITCH ESL & E.164 CDR Telephony Rating Engine',
-                    'file' => 'backend/app/Services/SipSignalingBridgeService.php',
+                    'file' => 'backend/app/Services/Voip/SipSignalingBridgeService.php',
                     'category' => 'VoIP',
                     'status' => 'VERIFIED',
                 ],
                 [
                     'id' => 'DOC-BGP-01',
                     'title' => 'BGP Autonomic Peering & IXP 95th-Percentile Analysis',
-                    'file' => 'backend/app/Services/BgpPeeringAnalysisService.php',
+                    'file' => 'backend/app/Services/Network/BgpPeeringAnalysisService.php',
                     'category' => 'BGP',
                     'status' => 'VERIFIED',
                 ],

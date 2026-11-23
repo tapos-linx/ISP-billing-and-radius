@@ -39,37 +39,38 @@
 ## Architecture Overview
 
 ```text
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                        ISP Billing Ecosystem                           â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                    â”‚
-           â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-           â–¼                                                 â–¼
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                     â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Android Architect Console â”‚                     â”‚ Windows WSL2 Backend â”‚
-â”‚ (Kotlin + Jetpack Compose)â”‚                     â”‚ (Docker Containers)  â”‚
-â”‚                           â”‚                     â”‚                      â”‚
-â”‚ â€¢ 5-Stage Matrix Explorer â”‚                     â”‚ â€¢ PostgreSQL 16      â”‚
-â”‚ â€¢ Interactive Test Lab    â”‚ â—„â”€â”€ REST / UDP â”€â”€â–º  â”‚   (radcheck/radreply)â”‚
-â”‚ â€¢ RFC 3576 PoD Simulator  â”‚                     â”‚   (partition radacct)â”‚
-â”‚ â€¢ bKash/Nagad Webhook Sim â”‚                     â”‚ â€¢ FreeRADIUS 3.2.3   â”‚
-â”‚ â€¢ Accounting & Subscribersâ”‚                     â”‚   (rlm_sql, UDP 1812)â”‚
-â”‚ â€¢ Dual AI Architect Engineâ”‚                     â”‚ â€¢ Redis 7 Cache      â”‚
-â”‚ â€¢ PowerShell Script Vault â”‚                     â”‚ â€¢ MinIO S3 Backups   â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                                             â”‚
-                                                     UDP 3799 (CoA / PoD)
-                                                     HTTPS REST API
-                                                             â”‚
-                                                             â–¼
-                                                  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                                                  â”‚ Mikrotik CCR2004     â”‚
-                                                  â”‚ RouterOS v7 (BRAS)   â”‚
-                                                  â”‚                      â”‚
-                                                  â”‚ â€¢ PPPoE Server       â”‚
-                                                  â”‚ â€¢ Simple Queues      â”‚
-                                                  â”‚ â€¢ Walled Garden Pool â”‚
-                                                  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
++-------------------------------------------------------------------------+
+|                        ISP Billing Ecosystem                            |
++-------------------------------------------------------------------------+
+                                    |
+            +-----------------------+-----------------------+
+            |                                               |
+            v                                               v
++-------------------------------+               +-----------------------+
+| Android Architect Console     |               | Windows WSL2 Backend  |
+| (Kotlin + Jetpack Compose)    |               | (Docker Containers)   |
+|                               |               |                       |
+| * 5-Stage Matrix Explorer     |               | * PostgreSQL 16       |
+| * Interactive Test Lab        | <--- REST --->|   (radcheck/radreply) |
+| * RFC 3576 PoD Simulator      |               |   (partition radacct) |
+| * bKash/Nagad Webhook Sim     |               | * FreeRADIUS 3.2.3    |
+| * Accounting & Subscribers    |               |   (rlm_sql, UDP 1812) |
+| * Dual AI Architect Engine    |               | * Redis 7 Cache       |
+| * PowerShell Script Vault     |               | * MinIO S3 Backups    |
++-------------------------------+               +-----------------------+
+                                                            |
+                                                    UDP 3799 (CoA / PoD)
+                                                    HTTPS REST API
+                                                            |
+                                                            v
+                                                +-----------------------+
+                                                | MikroTik CCR2004      |
+                                                | RouterOS v7 (BNG)     |
+                                                |                       |
+                                                | * PPPoE Server        |
+                                                | * Simple Queues       |
+                                                | * Walled Garden Pool  |
+                                                +-----------------------+
 ```
 
 ---
@@ -103,6 +104,14 @@
 | **Stage 11**| Cloud Staging (Google Cloud / AWS) | Cloud Run, GCE, Secret Manager, AWS EC2 | **VERIFIED / READY** | 7-gate cloud staging & pre-flight suite pass |
 | **Stage 12**| On-Prem Cutover & Production Prep | Ubuntu 24.04 + MikroTik RouterOS v7 | **VERIFIED / READY** | 8-gate master cutover & pilot drill pass |
 | **Stage 13**| Evolution & Day-2 Operations | Release 2.0 Roadmap, Tech Debt, Postmortems | **VERIFIED / READY** | 7-gate evolution verification suite pass |
+| **Release 2.0 (Epic 1)** | Wi-Fi Hotspot Voucher System | Citus 128-Shard Vouchers / ESC/POS 80mm | **VERIFIED** | 7-gate voucher suite pass |
+| **Release 2.0 (Epic 2)** | VoIP / SIP Telephony Rating Engine | FreeSWITCH ESL / E.164 Redis Tariffs | **VERIFIED** | Real-time CDR rating pass |
+| **Release 2.0 (Epic 3)** | ClickHouse 2-Year IPDR Cluster | MergeTree TTL 730-DAY / Forensic Lookup | **VERIFIED** | 6-gate IPDR suite pass |
+| **Release 2.1** | Hotspot Captive Portal & POS Expansion | WISPr Login / bKash QR / 80mm Thermal | **VERIFIED** | Captive portal & POS pass |
+| **Release 2.2** | Mobile API Bridge & FCM Push Gateway | REST Bridge / Expo Client / Citus Cache | **VERIFIED** | Mobile bridge & FCM pass |
+| **Release 2.3** | Carrier Pathways 1-4 Complete Delivery | Expo Client / Tier-1 AI Bot / Helm K8s | **VERIFIED** | 4 pathways 100% verified |
+| **Release 2.4** | Strategic Four Pillars & Hardware Onboarding | MikroTik / Huawei / ZTE / BGP IXP 95th | **VERIFIED** | Hardware configs staged |
+| **Release 2.5** | Certified Carrier Stack & A2UI Copilot | AG-UI Copilot / Port 8010 / RFC 5176 PoD | **VERIFIED** | 138 tests, 1047 assertions |
 
 ---
 
@@ -126,11 +135,11 @@
 
 ### Method 1: Direct APK Installation (Recommended)
 1. Download or export the `app-debug.apk` file:
-   - In **Google AI Studio**: Click **Settings** (gear icon) â†’ **Download Project as ZIP** or **Export APK**.
+   - In **Google AI Studio**: Click **Settings** (gear icon) -> **Download Project as ZIP** or **Export APK**.
    - Or use the pre-built APK generated in `.build-outputs/` or `app/build/outputs/apk/debug/`.
 2. Transfer the `.apk` file to your Android phone or tablet (via USB, Google Drive, WhatsApp, or email).
 3. On your Android device:
-   - Open **Settings** â†’ **Security** (or **Apps**).
+   - Open **Settings** -> **Security** (or **Apps**).
    - Enable **Install Unknown Apps** for your browser or file manager.
    - Tap `app-debug.apk` and select **Install**.
 4. Open the **ISP Billing** app from your home screen.
@@ -143,10 +152,10 @@
 
 #### Option A: Using Android Studio
 1. Open **Android Studio** (Hedgehog, Iguana, Jellyfish, or newer).
-2. Select **File** â†’ **Open...** and select this repository's root folder.
+2. Select **File** -> **Open...** and select this repository's root folder.
 3. Allow Gradle to synchronize dependencies.
 4. Connect an Android phone via USB (with **USB Debugging** enabled) or start an Android Emulator.
-5. Click the green **Run (â–¶)** button or press `Shift + F10`.
+5. Click the green **Run (Play)** button or press `Shift + F10`.
 
 #### Option B: Using Command Line (Windows / Linux / macOS)
 On Windows:
@@ -298,7 +307,7 @@ The Android application includes a real-time hardware simulation suite:
 4. **RouterOS v7 Script Builder:**
    - Dynamically generates copy-pasteable RouterOS `.rsc` configurations based on custom VLAN, IP pools, and FreeRADIUS IP inputs.
 5. **Dual AI Architect Engine:**
-   - âš¡ **Low-Latency Mode** (`gemini-3.1-flash-lite`): Fast answers for PowerShell flags, FreeRADIUS dictionary attributes, and RouterOS commands.
+   - [Fast] **Low-Latency Mode** (`gemini-3.1-flash-lite`): Fast answers for PowerShell flags, FreeRADIUS dictionary attributes, and RouterOS commands.
    - ðŸ§  **High Thinking Mode** (`gemini-4-argon` with high thinking level): Deep architectural guidance on BGP multihoming, MPLS, high-availability PostgreSQL, and BSS database sharding.
 
 ### Automated Local QA Lab Runner (Stage 9)
