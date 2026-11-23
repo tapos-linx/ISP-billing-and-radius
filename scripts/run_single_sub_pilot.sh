@@ -431,7 +431,7 @@ cleanup_and_rollback() {
         elif command -v docker >/dev/null 2>&1 && docker ps --format '{{.Names}}' | grep -q isp_postgres; then
             docker exec -i isp_postgres psql -U radius_user -d isp_billing -q -c \"${purge_sql}\" 2>/dev/null || true
         elif command -v psql >/dev/null 2>&1; then
-            PGPASSWORD=\"\${DB_PASSWORD:-${DB_PASSWORD}}\" psql -U \"\${DB_USER:-isp_admin}\" -d \"\${DB_NAME:-isp_bss_oss}\" -q -c \"${purge_sql}\" 2>/dev/null || true
+            PGPASSWORD="${DB_PASSWORD:-}" psql -U "${DB_USER:-isp_admin}" -d "${DB_NAME:-isp_bss_oss}" -q -c "${purge_sql}" 2>/dev/null || true
         fi
     " || log_warn "Notice: PostgreSQL purge completed with fallback."
 
@@ -674,8 +674,8 @@ EXEC_PROVISION="
         docker exec -i isp_postgres psql -U radius_user -d isp_billing -q -c \"${PROVISION_SQL}\"
         docker exec isp_redis redis-cli ${REDIS_CLI_AUTH} del \"radius:auth:${PILOT_USER}\" >/dev/null 2>&1 || true
     else
-        PGPASSWORD=\"\${DB_PASSWORD:-${DB_PASSWORD}}\" psql -U \"\${DB_USER:-isp_admin}\" -d \"\${DB_NAME:-isp_bss_oss}\" -q -c \"${PROVISION_SQL}\"
-        redis-cli del \"radius:auth:${PILOT_USER}\" >/dev/null 2>&1 || true
+        PGPASSWORD="${DB_PASSWORD:-}" psql -U "${DB_USER:-isp_admin}" -d "${DB_NAME:-isp_bss_oss}" -q -c "${PROVISION_SQL}"
+        redis-cli del "radius:auth:${PILOT_USER}" >/dev/null 2>&1 || true
     fi
 "
 remote_exec "${EXEC_PROVISION}"

@@ -135,7 +135,12 @@ def main():
 
     # Gate 7: Verify Loki Log Aggregation & Promtail Log Shipping
     log_step("7/7", "Verifying Loki Log Aggregator & Promtail Shipper Health...")
-    loki_ready = run_cmd(["docker", "exec", "isp_loki", "wget", "-qO-", "http://localhost:3100/ready"])
+    loki_ready = ""
+    for _ in range(4):
+        loki_ready = run_cmd(["docker", "exec", "isp_loki", "wget", "-qO-", "http://localhost:3100/ready"])
+        if "ready" in loki_ready:
+            break
+        time.sleep(2)
     if "ready" in loki_ready:
         log_pass("Grafana Loki log aggregator is READY on port 3100.")
     else:
