@@ -117,7 +117,7 @@ class RunContainerlabDrillCommand extends Command
         $coaSuccess = $coaService->changeBandwidth(
             username: $username,
             nasIp: '172.20.20.10',
-            secret: '${RADIUS_SECRET}',
+            secret: (string) config('services.radius.secret', ''),
             rateLimit: '200M/200M',
             coaPort: 3799,
             subscriberId: (string) $subscriber->subscriber_id

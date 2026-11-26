@@ -167,4 +167,14 @@ class GenieAcsClient
             ];
         }
     }
+
+    /**
+     * Normalize multi-vendor ONU optical power telemetry into standard dBm.
+     *
+     * @return array<string, mixed>
+     */
+    public function normalizeOpticalPower(int|float|string $rawPower, ?string $vendor = null): array
+    {
+        return OpticalPowerNormalizer::normalize($rawPower, $vendor);
+    }
 }

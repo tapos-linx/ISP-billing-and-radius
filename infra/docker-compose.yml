@@ -1,4 +1,4 @@
-﻿networks:
+networks:
   isp_internal_net:
   isp_external_net:
     driver: bridge
@@ -203,7 +203,8 @@ services:
       - bkash_secret
       - nagad_secret
     volumes:
-      - .:/var/www/html
+      - ../backend:/var/www/html
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
     depends_on:
       citus_master:
         condition: service_healthy

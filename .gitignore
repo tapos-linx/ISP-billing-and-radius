@@ -33,3 +33,14 @@ backend/bootstrap/cache/*.php
 !backend/bootstrap/cache/.gitignore
 .phpunit.result.cache
 OpenJarvis/
+
+# Compiled Laravel framework caches & views
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+!backend/storage/framework/**/.gitignore
+
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+!backend/storage/framework/**/.gitignore

@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\Route;
 | Stage 8, 12 & Phase 4/6 Complete Carrier API Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('v1')->group(function (): void {
+Route::prefix('v1')->middleware(['throttle:api'])->group(function (): void {
     Route::get('/health', function () {
         DB::select('SELECT 1');
         $redisPing = Redis::ping();

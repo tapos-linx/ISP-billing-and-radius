@@ -423,18 +423,18 @@ class AuditTrackerController extends Controller
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
                 <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Static Analysis</span>
-                <div class="mt-2 text-2xl font-bold text-sky-400">Level 5</div>
-                <p class="text-xs text-slate-400 mt-1">0 Errors (191 files)</p>
+                <div class="mt-2 text-2xl font-bold text-sky-400">Level 6</div>
+                <p class="text-xs text-slate-400 mt-1">'.htmlspecialchars($gates['phpstan_level']).'</p>
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
                 <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Code Style</span>
                 <div class="mt-2 text-2xl font-bold text-purple-400">Laravel Pint</div>
-                <p class="text-xs text-slate-400 mt-1">Clean (241 files formatted)</p>
+                <p class="text-xs text-slate-400 mt-1">'.htmlspecialchars($gates['code_style']).'</p>
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
                 <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Security Baseline</span>
                 <div class="mt-2 text-2xl font-bold text-amber-400">Fail-Closed</div>
-                <p class="text-xs text-slate-400 mt-1">Docker Secrets & Blocking Trivy</p>
+                <p class="text-xs text-slate-400 mt-1">'.htmlspecialchars($gates['security_baseline']).'</p>
             </div>
         </section>
 
@@ -459,7 +459,7 @@ class AuditTrackerController extends Controller
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-base font-bold text-slate-100">Authoritative Engineering Runbooks (docs/)</h2>
-                    <p class="text-xs text-slate-400">17 formal specification and disaster recovery documents</p>
+                    <p class="text-xs text-slate-400">'.count($runbooks).' formal specification and disaster recovery documents</p>
                 </div>
                 <span class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-800 text-slate-300">'.count($runbooks).' Runbooks</span>
             </div>
@@ -503,7 +503,7 @@ class AuditTrackerController extends Controller
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-base font-bold text-slate-100">Stage Progress & Engineering Reports</h2>
-                    <p class="text-xs text-slate-400">Chronological execution and compliance audits from Stage 0 to Release 2.3</p>
+                    <p class="text-xs text-slate-400">Chronological execution and compliance audits from Stage 0 to '.htmlspecialchars($platform['version']).'</p>
                 </div>
                 <span class="text-xs font-semibold px-2.5 py-1 rounded bg-slate-800 text-slate-300">'.count($stages).' Reports</span>
             </div>

@@ -74,12 +74,33 @@ jobs:
         run: vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=1G
 
   # ====================================================================
-  # 3. Unit & Feature Tests with Code Coverage (>= 80% Threshold)
+  # 3. A2UI Antigravity Copilot Pytest Suite
+  # ====================================================================
+  a2ui-copilot-test:
+    name: A2UI Copilot & NOC Catalog Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install A2UI Requirements
+        run: pip install -r ai_agent/requirements.txt
+
+      - name: Run A2UI Pytest Suite
+        run: PYTHONPATH=. pytest tests/test_antigravity_a2ui.py -v
+
+  # ====================================================================
+  # 4. Unit & Feature Tests with Code Coverage (>= 80% Threshold)
   # ====================================================================
   unit-and-feature-tests:
     name: PHPUnit & Feature Tests (>=80% Coverage)
     runs-on: ubuntu-latest
-    needs: [lint-and-static-analysis]
+    needs: [lint-and-static-analysis, a2ui-copilot-test]
     services:
       postgres:
         image: postgres:16-alpine
@@ -156,7 +177,7 @@ jobs:
           vendor/bin/phpunit --testdox
 
   # ====================================================================
-  # 4. Container Vulnerability Scanning (Trivy)
+  # 5. Container Vulnerability Scanning (Trivy)
   # ====================================================================
   container-vulnerability-scan:
     name: Container Vulnerability Scan (Trivy)
@@ -175,7 +196,7 @@ jobs:
           exit-code: '1'
 
   # ====================================================================
-  # 5. End-to-End Docker Compose Integration Test
+  # 6. End-to-End Docker Compose Integration Test
   # ====================================================================
   e2e-integration-test:
     name: End-to-End Docker Compose Integration
@@ -229,7 +250,11 @@ jobs:
 
       - name: Execute Live Carrier Pilot Drill (7/7 Gates)
         run: |
-          docker compose -f infra/docker-compose.yml exec -T laravel_bss php artisan carrier:pilot-drill
+          docker compose -f infra/docker-compose.yml exec -T laravel_app php artisan carrier:pilot-drill
+
+      - name: Execute Containerlab Virtual CHR Hardware-in-the-Loop Drill (5/5 Gates)
+        run: |
+          docker compose -f infra/docker-compose.yml exec -T laravel_app php artisan carrier:clab-drill --tenant-id=1
 
       - name: Tear Down Docker Compose Stack
         if: always()

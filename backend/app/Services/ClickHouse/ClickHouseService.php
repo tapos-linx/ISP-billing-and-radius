@@ -136,6 +136,64 @@ class ClickHouseService
     }
 
     /**
+     * Bulk Ingest High-Velocity FreeRADIUS radacct Telemetry into ClickHouse
+     *
+     * @param  array<int, array<string, mixed>>  $records
+     */
+    public function insertRadacctBatch(array $records): bool
+    {
+        if (empty($records)) {
+            return true;
+        }
+
+        $lines = [];
+        foreach ($records as $r) {
+            $lines[] = json_encode([
+                'radacctid' => (int) ($r['radacctid'] ?? rand(100000, 999999)),
+                'acctsessionid' => (string) ($r['acctsessionid'] ?? $r['acct_session_id'] ?? ''),
+                'acctuniqueid' => (string) ($r['acctuniqueid'] ?? md5(($r['acctsessionid'] ?? '').($r['username'] ?? ''))),
+                'username' => (string) ($r['username'] ?? ''),
+                'tenant_id' => (int) ($r['tenant_id'] ?? 1),
+                'nasipaddress' => (string) ($r['nasipaddress'] ?? $r['nas_ip'] ?? '10.10.0.1'),
+                'nasportid' => (string) ($r['nasportid'] ?? '0'),
+                'acctstarttime' => (string) ($r['acctstarttime'] ?? now()->format('Y-m-d H:i:s')),
+                'acctupdatetime' => (string) ($r['acctupdatetime'] ?? now()->format('Y-m-d H:i:s')),
+                'acctstoptime' => isset($r['acctstoptime']) ? (string) $r['acctstoptime'] : null,
+                'acctsessiontime' => (int) ($r['acctsessiontime'] ?? 0),
+                'acctauthentic' => (string) ($r['acctauthentic'] ?? 'RADIUS'),
+                'connectinfo_start' => (string) ($r['connectinfo_start'] ?? ''),
+                'connectinfo_stop' => (string) ($r['connectinfo_stop'] ?? ''),
+                'acctinputoctets' => (int) ($r['acctinputoctets'] ?? $r['input_octets'] ?? 0),
+                'acctoutputoctets' => (int) ($r['acctoutputoctets'] ?? $r['output_octets'] ?? 0),
+                'calledstationid' => (string) ($r['calledstationid'] ?? ''),
+                'callingstationid' => (string) ($r['callingstationid'] ?? $r['calling_station_id'] ?? ''),
+                'acctterminatecause' => (string) ($r['acctterminatecause'] ?? ''),
+                'framedipaddress' => (string) ($r['framedipaddress'] ?? $r['framed_ip'] ?? '100.64.0.1'),
+                'framedipv6prefix' => (string) ($r['framedipv6prefix'] ?? ''),
+            ]);
+        }
+
+        $body = implode("\n", $lines);
+        $url = $this->getBaseUrl().'/?database='.$this->database.'&query='.urlencode('INSERT INTO radacct_telemetry FORMAT JSONEachRow');
+
+        try {
+            $resp = Http::timeout(15)
+                ->withBody($body, 'application/json')
+                ->withHeaders([
+                    'X-ClickHouse-User' => $this->user,
+                    'X-ClickHouse-Key' => $this->password,
+                ])
+                ->post($url);
+
+            return $resp->successful();
+        } catch (\Throwable $e) {
+            Log::error('ClickHouse radacct Ingestion Failed: '.$e->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
      * Sub-second forensic search for BTRC IPDR records
      */
     public function searchIpdr(

@@ -7,6 +7,7 @@ namespace App\Services\Mobile;
 use App\Models\Invoice;
 use App\Models\Subscriber;
 use App\Models\Tariff;
+use App\Services\Cpe\OpticalPowerNormalizer;
 use App\Services\Radius\RadiusCoaService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -124,14 +125,18 @@ class SubscriberSelfCareMobileService
         $sub = Subscriber::withoutGlobalScopes()->where('subscriber_id', $subscriberId)->firstOrFail();
 
         // Simulated real-time TR-069 Optical Power & Wi-Fi environment telemetry
-        $rxPowerDbm = round(-20.0 - (rand(10, 60) / 10), 2); // Optical RX power (Normal range: -8 dBm to -27 dBm)
-        $isOpticalHealthy = $rxPowerDbm >= -27.0 && $rxPowerDbm <= -8.0;
+        $rawTelemetry = -20.0 - (rand(10, 60) / 10);
+        $normalized = OpticalPowerNormalizer::normalize($rawTelemetry, 'huawei');
+        $rxPowerDbm = $normalized['normalized_dbm'];
+        $isOpticalHealthy = $normalized['is_healthy'];
 
         return [
             'subscriber_id' => $sub->subscriber_id,
             'ont_model' => 'Huawei HG8546M GPON Terminal',
             'optical_rx_power_dbm' => $rxPowerDbm,
             'optical_status' => $isOpticalHealthy ? 'OPTIMAL' : 'CRITICAL_DEGRADED',
+            'optical_classification' => $normalized['status'],
+            'is_in_range' => $normalized['is_in_range'],
             'wifi_status' => [
                 'ssid_24ghz' => 'HomeFiber_'.substr($sub->username, 0, 4).'_2.4G',
                 'ssid_5ghz' => 'HomeFiber_'.substr($sub->username, 0, 4).'_5G',
