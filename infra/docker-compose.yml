@@ -31,7 +31,6 @@ services:
     environment:
       POSTGRES_DB: ${DB_DATABASE:-isp_bss_oss}
       POSTGRES_USER: ${DB_USERNAME:-isp_admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     ports:
       # Network restriction: Citus database is strictly restricted to localhost / internal net
@@ -57,7 +56,6 @@ services:
     environment:
       POSTGRES_DB: ${DB_DATABASE:-isp_bss_oss}
       POSTGRES_USER: ${DB_USERNAME:-isp_admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     secrets:
       - db_password
@@ -72,7 +70,6 @@ services:
     environment:
       POSTGRES_DB: ${DB_DATABASE:-isp_bss_oss}
       POSTGRES_USER: ${DB_USERNAME:-isp_admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     secrets:
       - db_password

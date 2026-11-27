@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # ==============================================================================
 # Stage 8 Vertical Slice 2 â€” Zero-Risk <10ms radtest Verification Script
 # Tests Docker Citus + Redis + FreeRADIUS locally (never touches live network)
